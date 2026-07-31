@@ -119,26 +119,44 @@ function Fetch-Asset {
     }
 }
 
-# 3. Install fx-autoconfig Script Loader
+# 3. Install fx-autoconfig Script Loader (Inlined with UTF-8 No BOM to prevent Configuration Errors)
 Write-Host "[1/3] Installing fx-autoconfig script loader requirements..." -ForegroundColor Yellow
 
-$configJs = Fetch-Asset "installer\app\config.js"
-$configPrefs = Fetch-Asset "installer\pref\config-prefs.js"
-
-if ($configJs) {
-    Copy-Item -Path $configJs -Destination "$zenAppDir\config.js" -Force
-    Write-Host "  -> Installed config.js" -ForegroundColor Gray
+$configJsContent = @"
+// config.js - fx-autoconfig main loader for Zen / Firefox
+try {
+  const { Services } = ChromeUtils.importESModule("resource://gre/modules/Services.sys.mjs");
+  const chromeDir = Services.dirsvc.get("UChrm", Ci.nsIFile);
+  const bootFile = chromeDir.clone();
+  bootFile.append("utils");
+  bootFile.append("boot.sys.mjs");
+  if (bootFile.exists()) {
+    ChromeUtils.importESModule(Services.io.newFileURI(bootFile).spec);
+  }
+} catch (e) {
+  console.error("[fx-autoconfig] Failed to load boot.sys.mjs:", e);
 }
+"@
+
+$configPrefsContent = @"
+pref("general.config.filename", "config.js");
+pref("general.config.obscure_value", 0);
+pref("general.config.sandbox_enabled", false);
+"@
+
+# Write UTF-8 WITHOUT BOM (essential for Firefox autoconfig parser)
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+
+[System.IO.File]::WriteAllText("$zenAppDir\config.js", $configJsContent, $utf8NoBom)
+Write-Host "  -> Installed config.js" -ForegroundColor Gray
 
 $defaultsPrefDir = Join-Path $zenAppDir "defaults\pref"
 if (-not (Test-Path $defaultsPrefDir)) {
     New-Item -ItemType Directory -Path $defaultsPrefDir -Force | Out-Null
 }
 
-if ($configPrefs) {
-    Copy-Item -Path $configPrefs -Destination "$defaultsPrefDir\config-prefs.js" -Force
-    Write-Host "  -> Installed config-prefs.js" -ForegroundColor Gray
-}
+[System.IO.File]::WriteAllText("$defaultsPrefDir\config-prefs.js", $configPrefsContent, $utf8NoBom)
+Write-Host "  -> Installed config-prefs.js" -ForegroundColor Gray
 
 # 4. Install Chrome Engine & Zentral.uc.js
 Write-Host "[2/3] Installing Chrome loader engine & Zentral script..." -ForegroundColor Yellow
