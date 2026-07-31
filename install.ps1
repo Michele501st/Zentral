@@ -50,7 +50,7 @@ if (-not $zenAppDir) {
 
 Write-Host "[+] Found Zen Browser App Directory: $zenAppDir" -ForegroundColor Green
 
-# 2. Locate Active Zen Profile Directory
+# 2. Locate Zen Profile Directories (Multi-Profile Support)
 $zenAppData = "$env:AppData\zen"
 if (-not (Test-Path $zenAppData)) {
     Write-Host "[X] Could not locate Zen AppData folder at $zenAppData. Installation aborted." -ForegroundColor Red
@@ -58,12 +58,11 @@ if (-not (Test-Path $zenAppData)) {
 }
 
 $profilesIni = "$zenAppData\profiles.ini"
-$targetProfile = $null
+$targetProfiles = @()
 
 if (Test-Path $profilesIni) {
     $iniContent = Get-Content $profilesIni
     $isRelative = $true
-    $pathVal = $null
     
     foreach ($line in $iniContent) {
         if ($line -match "^IsRelative=(.*)$") {
@@ -72,29 +71,39 @@ if (Test-Path $profilesIni) {
         if ($line -match "^Path=(.*)$") {
             $pathVal = $Matches[1]
             if ($pathVal -like "*default*" -or $pathVal -like "*release*") {
+                $pPath = $null
                 if ($isRelative) {
-                    $targetProfile = Join-Path $zenAppData $pathVal
+                    $pPath = Join-Path $zenAppData $pathVal
                 } else {
-                    $targetProfile = $pathVal
+                    $pPath = $pathVal
+                }
+                if (Test-Path $pPath) {
+                    $targetProfiles += $pPath
                 }
             }
         }
     }
 }
 
-if (-not $targetProfile -or -not (Test-Path $targetProfile)) {
+# Fallback: install to all folders in Profiles directory if profiles.ini parsing fails
+if ($targetProfiles.Count -eq 0) {
     $foundProfiles = Get-ChildItem "$zenAppData\Profiles" -Directory -ErrorAction SilentlyContinue
-    if ($foundProfiles.Count -gt 0) {
-        $targetProfile = $foundProfiles[0].FullName
+    foreach ($fp in $foundProfiles) {
+        $targetProfiles += $fp.FullName
     }
 }
 
-if (-not $targetProfile -or -not (Test-Path $targetProfile)) {
-    Write-Host "[X] Could not locate Zen Profile directory." -ForegroundColor Red
+$targetProfiles = $targetProfiles | Select-Object -Unique
+
+if ($targetProfiles.Count -eq 0) {
+    Write-Host "[X] Could not locate any Zen Profile directories." -ForegroundColor Red
     exit 1
 }
 
-Write-Host "[+] Found Active Zen Profile: $targetProfile" -ForegroundColor Green
+Write-Host "[+] Found active profile(s):" -ForegroundColor Green
+foreach ($tp in $targetProfiles) {
+    Write-Host "  -> $tp" -ForegroundColor Gray
+}
 Write-Host ""
 
 # Asset Retrieval Helper (Works for both local files & web one-liner)
@@ -158,30 +167,40 @@ if (-not (Test-Path $defaultsPrefDir)) {
 [System.IO.File]::WriteAllText("$defaultsPrefDir\config-prefs.js", $configPrefsContent, $utf8NoBom)
 Write-Host "  -> Installed config-prefs.js" -ForegroundColor Gray
 
-# 4. Install Chrome Engine & Zentral.uc.js
-Write-Host "[2/3] Installing Chrome loader engine & Zentral script..." -ForegroundColor Yellow
+# 4. Install Chrome Engine & Zentral.uc.js to all profiles
+Write-Host "[2/3] Installing Chrome loader engine & Zentral script to profile(s)..." -ForegroundColor Yellow
 
-$profileChrome = Join-Path $targetProfile "chrome"
-$profileJS = Join-Path $profileChrome "JS"
-$profileUtils = Join-Path $profileChrome "utils"
-
-New-Item -ItemType Directory -Path $profileJS -Force | Out-Null
-New-Item -ItemType Directory -Path $profileUtils -Force | Out-Null
-
+# Download assets once to temp to speed up multi-profile copying
 $utilsFiles = @("boot.sys.mjs", "chrome.manifest", "fs.sys.mjs", "module_loader.mjs", "uc_api.sys.mjs", "utils.sys.mjs")
+$downloadedUtils = @{}
 foreach ($uf in $utilsFiles) {
     $uPath = Fetch-Asset "installer\utils\$uf"
     if ($uPath) {
-        Copy-Item -Path $uPath -Destination "$profileUtils\$uf" -Force
+        $downloadedUtils[$uf] = $uPath
     }
 }
-Write-Host "  -> Installed utils/ engine files" -ForegroundColor Gray
-
 $zentralScript = Fetch-Asset "chrome\JS\Zentral.uc.js"
-if ($zentralScript) {
-    Copy-Item -Path $zentralScript -Destination "$profileJS\Zentral.uc.js" -Force
-    Write-Host "  -> Installed Zentral.uc.js (v1.5.0)" -ForegroundColor Gray
+
+foreach ($targetProfile in $targetProfiles) {
+    Write-Host " -> Configuring profile: $(Split-Path $targetProfile -Leaf)" -ForegroundColor Gray
+    $profileChrome = Join-Path $targetProfile "chrome"
+    $profileJS = Join-Path $profileChrome "JS"
+    $profileUtils = Join-Path $profileChrome "utils"
+
+    New-Item -ItemType Directory -Path $profileJS -Force | Out-Null
+    New-Item -ItemType Directory -Path $profileUtils -Force | Out-Null
+
+    foreach ($uf in $utilsFiles) {
+        if ($downloadedUtils.ContainsKey($uf)) {
+            Copy-Item -Path $downloadedUtils[$uf] -Destination "$profileUtils\$uf" -Force
+        }
+    }
+    
+    if ($zentralScript) {
+        Copy-Item -Path $zentralScript -Destination "$profileJS\Zentral.uc.js" -Force
+    }
 }
+Write-Host "  -> Installed Zentral.uc.js and loader engine to all profiles." -ForegroundColor Gray
 
 Write-Host "[3/3] Finalizing setup..." -ForegroundColor Yellow
 Write-Host ""

@@ -42,7 +42,7 @@ No manual setup or prerequisite installation required! The included 1-click inst
 ### Option B: PowerShell Command
 Open PowerShell and run:
 ```powershell
-iwr -useb https://raw.githubusercontent.com/<YOUR_USERNAME>/Zentral/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/Michele501st/Zentral/main/install.ps1 | iex
 ```
 
 ---
