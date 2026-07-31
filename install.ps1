@@ -8,6 +8,18 @@ Write-Host "         Zentral - 1-Click Automated Installer       " -ForegroundCo
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host ""
 
+# Self-elevate to Administrator if writing to Program Files requires it
+$isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    Write-Host "[*] Requesting Administrator privileges to access Program Files..." -ForegroundColor Yellow
+    try {
+        Start-Process powershell -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+        exit 0
+    } catch {
+        Write-Host "[!] Could not elevate. Attempting installation with current privileges..." -ForegroundColor Yellow
+    }
+}
+
 # 1. Locate Zen Browser Application Directory
 $zenAppPaths = @(
     "$env:ProgramFiles\Zen Browser",
@@ -85,29 +97,46 @@ if (-not $targetProfile -or -not (Test-Path $targetProfile)) {
 Write-Host "[+] Found Active Zen Profile: $targetProfile" -ForegroundColor Green
 Write-Host ""
 
-# 3. Install fx-autoconfig Script Loader
-Write-Host "[1/3] Installing fx-autoconfig script loader requirements..." -ForegroundColor Yellow
-
+# Asset Retrieval Helper (Works for both local files & web one-liner)
+$repoRawUrl = "https://raw.githubusercontent.com/Michele501st/Zentral/main"
 $scriptRoot = $PSScriptRoot
 if (-not $scriptRoot) { $scriptRoot = Get-Location }
 
-$configJsSource = Join-Path $scriptRoot "installer\app\config.js"
-$configPrefsSource = Join-Path $scriptRoot "installer\pref\config-prefs.js"
-$utilsSource = Join-Path $scriptRoot "installer\utils"
+function Fetch-Asset {
+    param([string]$relPath)
+    $local = Join-Path $scriptRoot $relPath
+    if (Test-Path $local) {
+        return $local
+    }
+    $tempFile = Join-Path $env:TEMP ("zentral_" + (Split-Path $relPath -Leaf))
+    $url = "$repoRawUrl/$($relPath.Replace('\', '/'))"
+    try {
+        Invoke-WebRequest -Uri $url -OutFile $tempFile -UseBasicParsing
+        return $tempFile
+    } catch {
+        Write-Host "[!] Error downloading asset: $url" -ForegroundColor Red
+        return $null
+    }
+}
 
-# Copy config.js to Zen App Root
-if (Test-Path $configJsSource) {
-    Copy-Item -Path $configJsSource -Destination "$zenAppDir\config.js" -Force
+# 3. Install fx-autoconfig Script Loader
+Write-Host "[1/3] Installing fx-autoconfig script loader requirements..." -ForegroundColor Yellow
+
+$configJs = Fetch-Asset "installer\app\config.js"
+$configPrefs = Fetch-Asset "installer\pref\config-prefs.js"
+
+if ($configJs) {
+    Copy-Item -Path $configJs -Destination "$zenAppDir\config.js" -Force
     Write-Host "  -> Installed config.js" -ForegroundColor Gray
 }
 
-# Copy config-prefs.js to Zen App defaults/pref/
 $defaultsPrefDir = Join-Path $zenAppDir "defaults\pref"
 if (-not (Test-Path $defaultsPrefDir)) {
     New-Item -ItemType Directory -Path $defaultsPrefDir -Force | Out-Null
 }
-if (Test-Path $configPrefsSource) {
-    Copy-Item -Path $configPrefsSource -Destination "$defaultsPrefDir\config-prefs.js" -Force
+
+if ($configPrefs) {
+    Copy-Item -Path $configPrefs -Destination "$defaultsPrefDir\config-prefs.js" -Force
     Write-Host "  -> Installed config-prefs.js" -ForegroundColor Gray
 }
 
@@ -121,14 +150,18 @@ $profileUtils = Join-Path $profileChrome "utils"
 New-Item -ItemType Directory -Path $profileJS -Force | Out-Null
 New-Item -ItemType Directory -Path $profileUtils -Force | Out-Null
 
-if (Test-Path $utilsSource) {
-    Copy-Item -Path "$utilsSource\*" -Destination $profileUtils -Force -Recurse
-    Write-Host "  -> Installed utils/ engine files" -ForegroundColor Gray
+$utilsFiles = @("boot.sys.mjs", "chrome.manifest", "fs.sys.mjs", "module_loader.mjs", "uc_api.sys.mjs", "utils.sys.mjs")
+foreach ($uf in $utilsFiles) {
+    $uPath = Fetch-Asset "installer\utils\$uf"
+    if ($uPath) {
+        Copy-Item -Path $uPath -Destination "$profileUtils\$uf" -Force
+    }
 }
+Write-Host "  -> Installed utils/ engine files" -ForegroundColor Gray
 
-$zentralSource = Join-Path $scriptRoot "chrome\JS\Zentral.uc.js"
-if (Test-Path $zentralSource) {
-    Copy-Item -Path $zentralSource -Destination "$profileJS\Zentral.uc.js" -Force
+$zentralScript = Fetch-Asset "chrome\JS\Zentral.uc.js"
+if ($zentralScript) {
+    Copy-Item -Path $zentralScript -Destination "$profileJS\Zentral.uc.js" -Force
     Write-Host "  -> Installed Zentral.uc.js (v1.5.0)" -ForegroundColor Gray
 }
 
