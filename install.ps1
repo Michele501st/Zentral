@@ -62,24 +62,18 @@ $targetProfiles = @()
 
 if (Test-Path $profilesIni) {
     $iniContent = Get-Content $profilesIni
-    $isRelative = $true
     
     foreach ($line in $iniContent) {
-        if ($line -match "^IsRelative=(.*)$") {
-            $isRelative = ($Matches[1] -eq "1")
-        }
         if ($line -match "^Path=(.*)$") {
             $pathVal = $Matches[1]
-            if ($pathVal -like "*default*" -or $pathVal -like "*release*") {
-                $pPath = $null
-                if ($isRelative) {
-                    $pPath = Join-Path $zenAppData $pathVal
-                } else {
-                    $pPath = $pathVal
-                }
-                if (Test-Path $pPath) {
-                    $targetProfiles += $pPath
-                }
+            $pPath = $null
+            if ($pathVal -like "?:\*" -or $pathVal -like "\\*") {
+                $pPath = $pathVal
+            } else {
+                $pPath = Join-Path $zenAppData $pathVal
+            }
+            if (Test-Path $pPath) {
+                $targetProfiles += $pPath
             }
         }
     }
