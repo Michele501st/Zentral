@@ -132,19 +132,16 @@ function Fetch-Asset {
 Write-Host "[1/3] Installing fx-autoconfig script loader requirements..." -ForegroundColor Yellow
 
 $configJsContent = @"
-// config.js - fx-autoconfig main loader for Zen / Firefox
+// skip 1st line
 try {
-  const { Services } = ChromeUtils.importESModule("resource://gre/modules/Services.sys.mjs");
-  const chromeDir = Services.dirsvc.get("UChrm", Ci.nsIFile);
-  const bootFile = chromeDir.clone();
-  bootFile.append("utils");
-  bootFile.append("boot.sys.mjs");
-  if (bootFile.exists()) {
-    ChromeUtils.importESModule(Services.io.newFileURI(bootFile).spec);
+  let cmanifest = Cc['@mozilla.org/file/directory_service;1'].getService(Ci.nsIProperties).get('UChrm', Ci.nsIFile);
+  cmanifest.append('utils');
+  cmanifest.append('chrome.manifest');
+  if (cmanifest.exists()) {
+    Components.manager.QueryInterface(Ci.nsIComponentRegistrar).autoRegister(cmanifest);
+    ChromeUtils.importESModule("chrome://userchromejs/content/boot.sys.mjs");
   }
-} catch (e) {
-  console.error("[fx-autoconfig] Failed to load boot.sys.mjs:", e);
-}
+} catch (ex) {}
 "@
 
 $configPrefsContent = @"
