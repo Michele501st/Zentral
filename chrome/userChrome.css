@@ -221,13 +221,10 @@ tab-group:not([split-view-group]) {
       .group-stash-button {
         justify-self: end;
         color: unset;
-
       }
 
       &:hover {
         background-color: transparent !important;
-
-        .tab-close-button {}
       }
 
       /* first column, area "icon" */
@@ -250,8 +247,6 @@ tab-group:not([split-view-group]) {
           @media (prefers-color-scheme: light) {
             filter: invert(1);
           }
-
-          &:hover {}
         }
       }
 
@@ -301,8 +296,6 @@ tab-group:not([split-view-group]) {
         width: 4px;
         border-radius: 2px;
       }
-
-      tab {}
     }
 
 
@@ -314,10 +307,6 @@ tab-group:not([split-view-group]) {
             translate: 0 0;
           }
         }
-      }
-
-      .tab-group-container {
-        tab:not([selected]) {}
       }
     }
   }

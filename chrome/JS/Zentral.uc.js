@@ -1549,16 +1549,7 @@
       if (!Core.getPref(Constants.TabGroups.PREF_ENABLED)) {
         console.log("[ZentralTabGroups] Tab Groups feature is disabled.");
         return;
-      // Ensure native browser tab group preferences are initialized
-      try {
-        if (!Services.prefs.prefHasUserValue("browser.tabs.groups.enabled")) {
-          Services.prefs.setBoolPref("browser.tabs.groups.enabled", true);
-        }
-        if (!Services.prefs.prefHasUserValue("browser.tabs.groups.add-arrow")) {
-          Services.prefs.setBoolPref("browser.tabs.groups.add-arrow", true);
-        }
-      } catch (e) {}
-
+      }
       this.clearStoredColorData();
       this.loadSavedColors();
       this.injectStyles();
@@ -1621,7 +1612,6 @@
      */
     injectStyles() {
       const css = `
-
 
         /* Zentral Tooltip Styling */
         #zentral-tabgroup-tooltip {
