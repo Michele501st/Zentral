@@ -112,7 +112,8 @@ function Fetch-Asset {
         return $local
     }
     $tempFile = Join-Path $env:TEMP ("zentral_" + (Split-Path $relPath -Leaf))
-    $url = "$repoRawUrl/$($relPath.Replace('\', '/'))"
+    $relPathUnix = $relPath -replace '\\', '/'
+    $url = "$repoRawUrl/$relPathUnix"
     try {
         Invoke-WebRequest -Uri $url -OutFile $tempFile -UseBasicParsing
         return $tempFile
@@ -125,24 +126,24 @@ function Fetch-Asset {
 # 3. Install fx-autoconfig Script Loader (Inlined with UTF-8 No BOM to prevent Configuration Errors)
 Write-Host "[1/3] Installing fx-autoconfig script loader requirements..." -ForegroundColor Yellow
 
-$configJsContent = @"
-// skip 1st line
-try {
-  let cmanifest = Cc['@mozilla.org/file/directory_service;1'].getService(Ci.nsIProperties).get('UChrm', Ci.nsIFile);
-  cmanifest.append('utils');
-  cmanifest.append('chrome.manifest');
-  if (cmanifest.exists()) {
-    Components.manager.QueryInterface(Ci.nsIComponentRegistrar).autoRegister(cmanifest);
-    ChromeUtils.importESModule("chrome://userchromejs/content/boot.sys.mjs");
-  }
-} catch (ex) {}
-"@
+$configJsContent = @(
+    '// skip 1st line',
+    'try {',
+    "  let cmanifest = Cc['@mozilla.org/file/directory_service;1'].getService(Ci.nsIProperties).get('UChrm', Ci.nsIFile);",
+    "  cmanifest.append('utils');",
+    "  cmanifest.append('chrome.manifest');",
+    '  if (cmanifest.exists()) {',
+    '    Components.manager.QueryInterface(Ci.nsIComponentRegistrar).autoRegister(cmanifest);',
+    '    ChromeUtils.importESModule("chrome://userchromejs/content/boot.sys.mjs");',
+    '  }',
+    '} catch (ex) {}'
+) -join "`r`n"
 
-$configPrefsContent = @"
-pref("general.config.filename", "config.js");
-pref("general.config.obscure_value", 0);
-pref("general.config.sandbox_enabled", false);
-"@
+$configPrefsContent = @(
+    'pref("general.config.filename", "config.js");',
+    'pref("general.config.obscure_value", 0);',
+    'pref("general.config.sandbox_enabled", false);'
+) -join "`r`n"
 
 # Write UTF-8 WITHOUT BOM (essential for Firefox autoconfig parser)
 $utf8NoBom = New-Object System.Text.UTF8Encoding $false

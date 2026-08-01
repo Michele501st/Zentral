@@ -1,4 +1,4 @@
-﻿
+
 // ==UserScript==
 // @name           Zentral
 // @description    Unified Apps Grid and Tabs Groups
@@ -1708,6 +1708,39 @@
 
         .zentral-group-initials {
           display: none !important;
+        }
+
+        /* Tab Group Container & Collapsed Tab Hiding Rules */
+        tab-group:not([split-view-group]) .tab-group-container {
+          max-height: 100% !important;
+          position: relative !important;
+          margin-inline-start: 12px !important;
+        }
+
+        tab-group:not([split-view-group]) .tab-group-container::after {
+          content: "" !important;
+          position: absolute !important;
+          left: -2px !important;
+          top: 0 !important;
+          background: var(--zentral-custom-color, var(--tab-group-color, currentColor)) !important;
+          height: 100% !important;
+          width: 2px !important;
+          pointer-events: none !important;
+        }
+
+        tab-group:not([split-view-group]) .tab-group-container tab {
+          transition: max-height 0.15s ease, opacity 0.15s ease !important;
+        }
+
+        tab-group:not([split-view-group])[collapsed] .tab-group-container tab:not([selected]) {
+          max-height: 0 !important;
+          min-height: 0 !important;
+          opacity: 0 !important;
+          margin-top: 0 !important;
+          margin-bottom: 0 !important;
+          padding-top: 0 !important;
+          padding-bottom: 0 !important;
+          pointer-events: none !important;
         }
 
         /* Collapsed Sidebar Mode Styling */
