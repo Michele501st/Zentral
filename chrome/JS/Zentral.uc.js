@@ -1621,160 +1621,7 @@
      */
     injectStyles() {
       const css = `
-        /* Remove focus frame/outline on click */
-        #tabbrowser-tabs tab-group *,
-        #tabbrowser-tabs tab-group *:focus,
-        #tabbrowser-tabs tab-group *:focus-visible,
-        #tabbrowser-tabs tab-group *:-moz-focusring {
-          outline: none !important;
-          box-shadow: none !important;
-        }
-        
-        /* Neutralize native pill backgrounds in all states */
-        #tabbrowser-tabs tab-group > .tab-group-label-container,
-        #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
-        #tabbrowser-tabs tab-group:hover > .tab-group-label-container,
-        #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label {
-          --tab-group-color: transparent !important;
-          background: transparent !important;
-          border-radius: 6px !important;
-        }
-        
-        /* Base State: Full Width Box */
-        #tabbrowser-tabs tab-group > .tab-group-label-container,
-        #tabbrowser-tabs tab-group:hover > .tab-group-label-container,
-        #tabbrowser-tabs tab-group[active] > .tab-group-label-container,
-        #tabbrowser-tabs tab-group:not([collapsed]) > .tab-group-label-container {
-          pointer-events: auto !important;
-          background-color: var(--zentral-custom-color, transparent) !important;
-          border-radius: 6px !important;
-          width: 100% !important;
-          min-width: 100% !important;
-          transition: all 0.15s ease !important;
-        }
-        #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
-        #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label,
-        #tabbrowser-tabs tab-group[active] > .tab-group-label-container .tab-group-label,
-        #tabbrowser-tabs tab-group:not([collapsed]) > .tab-group-label-container .tab-group-label {
-          background-color: transparent !important;
-          color: var(--atg-contrast-color, inherit) !important;
-          padding: 2px 8px !important;
-          transition: all 0.15s ease !important;
-        }
-        #tab-label-input {
-          background-color: var(--zentral-custom-color, transparent) !important;
-          color: var(--atg-contrast-color, inherit) !important;
-          border: 1px solid rgba(255, 255, 255, 0.3) !important;
-          outline: none !important;
-          border-radius: 6px !important;
-          padding: 2px 8px !important;
-        }
-        tab-group .group-marker {
-          display: none !important;
-        }
-        tab-group .tab-group-icon {
-          display: inline-flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          width: 14px !important;
-          height: 14px !important;
-          margin-right: 4px !important;
-        }
-        tab-group .tab-group-icon::after {
-          content: "" !important;
-          display: block !important;
-          width: 10px !important;
-          height: 10px !important;
-          background-color: currentColor !important;
-          -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
-          mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
-          -webkit-mask-size: contain !important;
-          mask-size: contain !important;
-          -webkit-mask-repeat: no-repeat !important;
-          mask-repeat: no-repeat !important;
-          -webkit-mask-position: center !important;
-          mask-position: center !important;
-          transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
-          transform: rotate(0deg) !important;
-        }
-        tab-group[collapsed] .tab-group-icon::after {
-          transform: rotate(-90deg) !important;
-        }
-        tab-group tab-group {
-          margin-left: 12px !important;
-          position: relative;
-        }
-        tab-group tab-group::before {
-          content: "";
-          position: absolute;
-          left: -6px;
-          top: 0;
-          bottom: 0;
-          width: 1.5px;
-          background-color: var(--zen-colors-border, rgba(255, 255, 255, 0.15));
-          z-index: 1;
-        }
 
-        .zentral-group-initials {
-          display: none !important;
-        }
-
-        /* Tab Group Container & Collapsed Tab Hiding Rules */
-        tab-group:not([split-view-group]) .tab-group-container {
-          max-height: 100% !important;
-          position: relative !important;
-          margin-inline-start: 12px !important;
-        }
-
-        tab-group:not([split-view-group]) .tab-group-container::after {
-          content: "" !important;
-          position: absolute !important;
-          left: -2px !important;
-          top: 0 !important;
-          background: var(--zentral-custom-color, var(--tab-group-color, currentColor)) !important;
-          height: 100% !important;
-          width: 2px !important;
-          pointer-events: none !important;
-        }
-
-        tab-group:not([split-view-group]) .tab-group-container tab {
-          transition: max-height 0.15s ease, opacity 0.15s ease !important;
-        }
-
-        tab-group:not([split-view-group])[collapsed] .tab-group-container tab:not([selected]) {
-          max-height: 0 !important;
-          min-height: 0 !important;
-          opacity: 0 !important;
-          margin-top: 0 !important;
-          margin-bottom: 0 !important;
-          padding-top: 0 !important;
-          padding-bottom: 0 !important;
-          pointer-events: none !important;
-        }
-
-        /* Collapsed Sidebar Mode Styling */
-        #tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container.tab-group-label-container {
-          justify-content: flex-start !important;
-          padding: 4px 6px !important;
-          width: 100% !important;
-          min-width: 100% !important;
-          min-height: 28px !important;
-          box-sizing: border-box !important;
-        }
-        #tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container .tab-group-label {
-          display: none !important;
-        }
-        #tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container .zentral-group-initials {
-          display: flex !important;
-          align-items: center !important;
-          justify-content: center !important;
-          flex: 1 !important;
-          font-size: 11px !important;
-          font-weight: 700 !important;
-          color: var(--atg-contrast-color, inherit) !important;
-          text-align: center !important;
-          padding-right: 14px !important; /* Offset for the chevron */
-        }
 
         /* Zentral Tooltip Styling */
         #zentral-tabgroup-tooltip {
@@ -2400,6 +2247,7 @@
         panel._currentGroup.style.setProperty("--tab-group-color", hex);
         panel._currentGroup.style.setProperty("--tab-group-color-invert", hex);
         panel._currentGroup.style.setProperty("--zentral-custom-color", hex);
+        panel._currentGroup.style.setProperty("--zentral-tabgroup-contrast-color", this.getContrastColor(hex));
         panel._currentGroup.style.setProperty("--atg-contrast-color", this.getContrastColor(hex));
         panel.querySelector("#ztg-input-hex").value = hex;
         const bigint = parseInt(hex.slice(1), 16);
@@ -2687,6 +2535,7 @@
           group.style.setProperty("--tab-group-color", colorString);
           group.style.setProperty("--tab-group-color-invert", colorString);
           group.style.setProperty("--zentral-custom-color", colorString);
+          group.style.setProperty("--zentral-tabgroup-contrast-color", this.getContrastColor(colorString));
           group.style.setProperty("--atg-contrast-color", this.getContrastColor(colorString));
           this.saveTabGroupColors();
         }
@@ -2889,6 +2738,7 @@
                 group.style.setProperty("--tab-group-color", color);
                 group.style.setProperty("--tab-group-color-invert", color);
                 group.style.setProperty("--zentral-custom-color", color);
+                group.style.setProperty("--zentral-tabgroup-contrast-color", this.getContrastColor(color));
                 group.style.setProperty("--atg-contrast-color", this.getContrastColor(color));
               }
             });

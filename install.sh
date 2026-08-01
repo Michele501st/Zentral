@@ -55,6 +55,9 @@ fi
 
 cp -rf "$SCRIPT_DIR/installer/utils/"* "$ZEN_PROFILE_DIR/chrome/utils/"
 cp -f "$SCRIPT_DIR/chrome/JS/Zentral.uc.js" "$ZEN_PROFILE_DIR/chrome/JS/Zentral.uc.js"
+if [ -f "$SCRIPT_DIR/chrome/userChrome.css" ]; then
+    cp -f "$SCRIPT_DIR/chrome/userChrome.css" "$ZEN_PROFILE_DIR/chrome/userChrome.css"
+fi
 
 echo ""
 echo "====================================================="

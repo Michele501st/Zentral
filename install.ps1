@@ -172,6 +172,7 @@ foreach ($uf in $utilsFiles) {
     }
 }
 $zentralScript = Fetch-Asset "chrome\JS\Zentral.uc.js"
+$zentralCss = Fetch-Asset "chrome\userChrome.css"
 
 foreach ($targetProfile in $targetProfiles) {
     Write-Host " -> Configuring profile: $(Split-Path $targetProfile -Leaf)" -ForegroundColor Gray
@@ -191,8 +192,11 @@ foreach ($targetProfile in $targetProfiles) {
     if ($zentralScript) {
         Copy-Item -Path $zentralScript -Destination "$profileJS\Zentral.uc.js" -Force
     }
+    if ($zentralCss) {
+        Copy-Item -Path $zentralCss -Destination "$profileChrome\userChrome.css" -Force
+    }
 }
-Write-Host "  -> Installed Zentral.uc.js and loader engine to all profiles." -ForegroundColor Gray
+Write-Host "  -> Installed Zentral.uc.js, userChrome.css, and loader engine to all profiles." -ForegroundColor Gray
 
 Write-Host "[3/3] Finalizing setup..." -ForegroundColor Yellow
 Write-Host ""
