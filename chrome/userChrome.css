@@ -14,6 +14,12 @@
   box-shadow: none !important;
 }
 
+#tabbrowser-tabs tab-group {
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+}
+
 /* Neutralize native pill backgrounds in all states */
 #tabbrowser-tabs tab-group > .tab-group-label-container,
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
@@ -32,18 +38,17 @@
   display: inline-flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: center !important;
   pointer-events: auto !important;
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 65%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.4))) 80%, transparent) !important;
   border-radius: 10px !important;
-  width: fit-content !important;
+  width: auto !important;
+  min-width: max-content !important;
   max-width: 100% !important;
   height: 28px !important;
   min-height: 28px !important;
   padding: 0 10px !important;
   box-sizing: border-box !important;
-  overflow: hidden !important;
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, margin 0.2s ease !important;
 }
 
@@ -56,17 +61,19 @@
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label,
 #tabbrowser-tabs tab-group[active] > .tab-group-label-container .tab-group-label,
 #tabbrowser-tabs tab-group:not([collapsed]) > .tab-group-label-container .tab-group-label {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
+  display: inline-block !important;
   background-color: transparent !important;
   color: var(--zentral-tabgroup-contrast-color, inherit) !important;
   font-size: 12px !important;
   font-weight: 600 !important;
   padding: 0 2px !important;
   margin: 0 !important;
+  width: auto !important;
+  min-width: auto !important;
+  max-width: none !important;
   white-space: nowrap !important;
-  flex-shrink: 0 !important;
+  overflow: visible !important;
+  flex: 1 1 auto !important;
   transition: color 0.15s ease !important;
 }
 
