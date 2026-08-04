@@ -21,10 +21,10 @@
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label {
   --tab-group-color: transparent !important;
   background: transparent !important;
-  border-radius: 8px !important;
+  border-radius: 10px !important;
 }
 
-/* Base State: Compact Glassmorphism Row */
+/* Base State: Compact Squircle Fit-Content Glassmorphism Pill */
 #tabbrowser-tabs tab-group > .tab-group-label-container,
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container,
 #tabbrowser-tabs tab-group[active] > .tab-group-label-container,
@@ -34,21 +34,34 @@
   align-items: center !important;
   justify-content: flex-start !important;
   pointer-events: auto !important;
-  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.1))) 25%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 45%, transparent) !important;
-  border-radius: 8px !important;
-  width: 100% !important;
-  min-width: 100% !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 65%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.4))) 80%, transparent) !important;
+  border-radius: 10px !important;
+  width: fit-content !important;
+  max-width: 100% !important;
   height: 28px !important;
   min-height: 28px !important;
-  padding: 0 8px !important;
+  padding: 0 10px !important;
   box-sizing: border-box !important;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, margin 0.2s ease !important;
+}
+
+/* Sidebar Position Awareness: Left vs Right Alignment */
+/* Default / Left Sidebar: Group labels align to the Right */
+#tabbrowser-tabs tab-group > .tab-group-label-container {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+}
+
+/* Right Sidebar: Group labels align to the Left */
+#main-window[zen-right-side="true"] #tabbrowser-tabs tab-group > .tab-group-label-container {
+  margin-left: 0 !important;
+  margin-right: auto !important;
 }
 
 #tabbrowser-tabs tab-group > .tab-group-label-container:hover {
-  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.15))) 35%, transparent) !important;
-  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.3))) 60%, transparent) !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.25))) 78%, transparent) !important;
+  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.5))) 90%, transparent) !important;
 }
 
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
@@ -71,9 +84,9 @@
 }
 
 #tab-label-input {
-  background-color: color-mix(in srgb, var(--zentral-custom-color, transparent) 30%, rgba(0, 0, 0, 0.3)) !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, transparent) 50%, rgba(0, 0, 0, 0.4)) !important;
   color: var(--zentral-tabgroup-contrast-color, inherit) !important;
-  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
   outline: none !important;
   border-radius: 6px !important;
   padding: 2px 6px !important;
