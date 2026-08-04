@@ -29,41 +29,49 @@
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label {
   --tab-group-color: transparent !important;
   background: transparent !important;
-  border-radius: 8px !important;
 }
 
-/* Base State: Full-Width Squircle Pill Aligned with Normal Tabs */
+/* ===========================================================================
+   Base State: Fit-Content Squircle Pill (title width + padding)
+   =========================================================================== */
 #tabbrowser-tabs tab-group > .tab-group-label-container,
-#tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container,
-#tabbrowser-tabs tab-group:hover > .tab-group-label-container,
-#tabbrowser-tabs tab-group[active] > .tab-group-label-container,
-#tabbrowser-tabs tab-group:not([collapsed]) > .tab-group-label-container {
+#tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
   justify-content: flex-start !important;
   pointer-events: auto !important;
-  width: 100% !important;
-  min-width: 100% !important;
+  /* Fit to content by default */
+  width: max-content !important;
+  min-width: 0 !important;
   max-width: 100% !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  max-height: 32px !important;
+  height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
   aspect-ratio: auto !important;
-  border-radius: 8px !important;
-  margin: 0 !important;
+  border-radius: 10px !important;
+  margin: 1px 0 !important;
   padding: 0 10px !important;
   box-sizing: border-box !important;
-  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.15))) 50%, transparent) !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.15))) 55%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.3))) 70%, transparent) !important;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+  /* Smooth expand on hover */
+  transition: width 0.2s ease, max-width 0.2s ease, background-color 0.2s ease, border-color 0.2s ease !important;
 }
 
-#tabbrowser-tabs tab-group > .tab-group-label-container:hover {
-  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.25))) 65%, transparent) !important;
-  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.5))) 85%, transparent) !important;
+/* ===========================================================================
+   Hover State: Expand to full tab width
+   Triggered by hovering the group header OR any tab inside the group
+   =========================================================================== */
+#tabbrowser-tabs tab-group:hover > .tab-group-label-container,
+#tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 65%, transparent) !important;
+  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.4))) 80%, transparent) !important;
 }
 
+/* Label text */
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label,
 #tabbrowser-tabs tab-group[active] > .tab-group-label-container .tab-group-label,
@@ -72,8 +80,6 @@
   flex-direction: row !important;
   align-items: center !important;
   flex: 1 1 auto !important;
-  width: 100% !important;
-  max-width: 100% !important;
   background-color: transparent !important;
   color: var(--zentral-tabgroup-contrast-color, inherit) !important;
   font-size: 12px !important;
@@ -83,17 +89,20 @@
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
+  width: auto !important;
+  max-width: 100% !important;
   order: 2 !important;
   transition: color 0.15s ease !important;
 }
 
+/* Chevron icon */
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-icon {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   width: 14px !important;
   height: 14px !important;
-  margin-right: 8px !important;
+  margin-right: 6px !important;
   margin-left: 0 !important;
   flex-shrink: 0 !important;
   order: 1 !important;
@@ -112,6 +121,15 @@
 
 tab-group .group-marker {
   display: none !important;
+}
+
+tab-group .tab-group-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0 !important;
 }
 
 tab-group .tab-group-icon::after {
