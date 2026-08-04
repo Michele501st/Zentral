@@ -1959,31 +1959,57 @@
       }
       const labelContainer = group.querySelector(".tab-group-label-container");
       if (labelContainer) {
-        // Override native Zen inline styles that force aspect-ratio:1 (circular badge)
-        labelContainer.style.setProperty("border-radius", "10px", "important");
-        labelContainer.style.setProperty("aspect-ratio", "auto", "important");
-        labelContainer.style.setProperty("align-self", "flex-start", "important");
-        labelContainer.style.setProperty("width", "fit-content", "important");
-        labelContainer.style.setProperty("max-width", "100%", "important");
-        labelContainer.style.setProperty("height", "28px", "important");
-        labelContainer.style.setProperty("min-height", "28px", "important");
-        labelContainer.style.setProperty("box-sizing", "border-box", "important");
-        labelContainer.style.setProperty("display", "flex", "important");
-        labelContainer.style.setProperty("flex-direction", "row", "important");
-        labelContainer.style.setProperty("align-items", "center", "important");
-        labelContainer.style.setProperty("padding", "0 10px", "important");
+        // Track hover state so we don't collapse during a hover
+        let _isHovered = false;
+
+        /**
+         * Enforces our inline layout styles on the labelContainer.
+         * Called initially and re-called by the style MutationObserver
+         * whenever Zen's own JS rewrites the element's style attribute.
+         */
+        const enforceRestingStyles = () => {
+          labelContainer.style.setProperty("border-radius", "10px", "important");
+          labelContainer.style.setProperty("aspect-ratio", "auto", "important");
+          labelContainer.style.setProperty("align-self", "flex-start", "important");
+          labelContainer.style.setProperty("width", "fit-content", "important");
+          labelContainer.style.setProperty("max-width", "100%", "important");
+          labelContainer.style.setProperty("height", "28px", "important");
+          labelContainer.style.setProperty("min-height", "28px", "important");
+          labelContainer.style.setProperty("box-sizing", "border-box", "important");
+          labelContainer.style.setProperty("display", "flex", "important");
+          labelContainer.style.setProperty("flex-direction", "row", "important");
+          labelContainer.style.setProperty("align-items", "center", "important");
+          labelContainer.style.setProperty("padding", "0 10px", "important");
+        };
+
+        // Apply immediately
+        enforceRestingStyles();
+
         const innerLabel = labelContainer.querySelector(".tab-group-label");
         if (innerLabel) {
           innerLabel.style.setProperty("border-radius", "10px", "important");
           innerLabel.style.setProperty("width", "auto", "important");
           innerLabel.style.setProperty("overflow", "visible", "important");
         }
+
+        // Guard against MutationObserver re-entrancy
+        let _styleGuard = false;
+        const styleWatcher = new MutationObserver(() => {
+          if (_styleGuard || _isHovered) return;
+          _styleGuard = true;
+          enforceRestingStyles();
+          _styleGuard = false;
+        });
+        styleWatcher.observe(labelContainer, { attributes: true, attributeFilter: ["style"] });
+
         // Wire hover: expand to full-width on mouseenter, collapse on mouseleave
         labelContainer.addEventListener("mouseenter", () => {
+          _isHovered = true;
           labelContainer.style.setProperty("align-self", "stretch", "important");
           labelContainer.style.setProperty("width", "100%", "important");
         });
         labelContainer.addEventListener("mouseleave", () => {
+          _isHovered = false;
           labelContainer.style.setProperty("align-self", "flex-start", "important");
           labelContainer.style.setProperty("width", "fit-content", "important");
         });
@@ -1992,11 +2018,13 @@
         const collapseTimer = { id: null };
         const expandLabel = () => {
           if (collapseTimer.id) { clearTimeout(collapseTimer.id); collapseTimer.id = null; }
+          _isHovered = true;
           labelContainer.style.setProperty("align-self", "stretch", "important");
           labelContainer.style.setProperty("width", "100%", "important");
         };
         const collapseLabel = () => {
           collapseTimer.id = setTimeout(() => {
+            _isHovered = false;
             labelContainer.style.setProperty("align-self", "flex-start", "important");
             labelContainer.style.setProperty("width", "fit-content", "important");
             collapseTimer.id = null;
