@@ -32,7 +32,7 @@
 }
 
 /* ===========================================================================
-   Glossy Squircle Pill with Smooth Edges & Zero Outer Bloom
+   Glossy Squircle Pill with Borderless Soft Gloss Finish
    =========================================================================== */
 #tabbrowser-tabs tab-group > .tab-group-label-container,
 #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container {
@@ -53,21 +53,20 @@
   padding: 0 10px !important;
   box-sizing: border-box !important;
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.15))) 55%, transparent) !important;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
-  border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.25))) 30%, rgba(255, 255, 255, 0.15)) !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.12) !important;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  border: none !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25), inset 0 -1px 1px rgba(0, 0, 0, 0.1) !important;
   backdrop-filter: blur(12px) saturate(120%) !important;
   -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+  transition: background-color 0.2s ease, background-image 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-/* Glossy Hover State (No Outer Bloom) */
+/* Glossy Hover State */
 #tabbrowser-tabs tab-group > .tab-group-label-container:hover,
 #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container {
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 70%, transparent) !important;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.4))) 45%, rgba(255, 255, 255, 0.25)) !important;
-  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.45), inset 0 -1px 1px rgba(0, 0, 0, 0.18) !important;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.4), inset 0 -1px 1px rgba(0, 0, 0, 0.15) !important;
 }
 
 /* Label text */
