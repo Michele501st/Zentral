@@ -32,7 +32,7 @@
 }
 
 /* ===========================================================================
-   Base State: Fit-Content Squircle Pill (title width + padding)
+   Always Full-Width Squircle Pill (matching normal tab width)
    =========================================================================== */
 #tabbrowser-tabs tab-group > .tab-group-label-container,
 #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container {
@@ -41,9 +41,8 @@
   align-items: center !important;
   justify-content: flex-start !important;
   pointer-events: auto !important;
-  /* Fit to content by default */
-  width: max-content !important;
-  min-width: 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
   max-width: 100% !important;
   height: 28px !important;
   min-height: 28px !important;
@@ -55,19 +54,14 @@
   box-sizing: border-box !important;
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.15))) 55%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.3))) 70%, transparent) !important;
-  /* Smooth highlight transition */
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-/* ===========================================================================
-   Hover State: Highlighting (Vibrant color fill & crisp border)
-   Triggered by hovering the group header OR any tab inside the group
-   =========================================================================== */
-#tabbrowser-tabs tab-group:hover > .tab-group-label-container,
+/* Hover State */
+#tabbrowser-tabs tab-group > .tab-group-label-container:hover,
 #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container {
-  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.3))) 85%, transparent) !important;
-  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.6))) 100%, transparent) !important;
-  box-shadow: 0 2px 8px color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, transparent)) 35%, transparent) !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 65%, transparent) !important;
+  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.4))) 80%, transparent) !important;
 }
 
 /* Label text */
@@ -120,15 +114,6 @@
 
 tab-group .group-marker {
   display: none !important;
-}
-
-tab-group .tab-group-icon {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 14px !important;
-  height: 14px !important;
-  flex-shrink: 0 !important;
 }
 
 tab-group .tab-group-icon::after {
