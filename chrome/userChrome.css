@@ -29,7 +29,6 @@
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label {
   --tab-group-color: transparent !important;
   background: transparent !important;
-  aspect-ratio: auto !important;
 }
 
 /* ===========================================================================
@@ -42,10 +41,9 @@
   align-items: center !important;
   justify-content: flex-start !important;
   pointer-events: auto !important;
-  /* Fit to title text + padding by default */
-  align-self: flex-start !important;
+  /* Fit to content by default */
   width: max-content !important;
-  min-width: max-content !important;
+  min-width: 0 !important;
   max-width: 100% !important;
   height: 28px !important;
   min-height: 28px !important;
@@ -57,21 +55,19 @@
   box-sizing: border-box !important;
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.15))) 55%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.3))) 70%, transparent) !important;
-  /* Smooth expand on hover */
-  transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease, background-color 0.2s ease, border-color 0.2s ease !important;
+  /* Smooth highlight transition */
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 /* ===========================================================================
-   Hover State: Expand to full tab width
+   Hover State: Highlighting (Vibrant color fill & crisp border)
    Triggered by hovering the group header OR any tab inside the group
    =========================================================================== */
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container,
 #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container {
-  align-self: stretch !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 65%, transparent) !important;
-  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.4))) 80%, transparent) !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.3))) 85%, transparent) !important;
+  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.6))) 100%, transparent) !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, transparent)) 35%, transparent) !important;
 }
 
 /* Label text */
