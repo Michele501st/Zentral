@@ -29,6 +29,7 @@
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label {
   --tab-group-color: transparent !important;
   background: transparent !important;
+  aspect-ratio: auto !important;
 }
 
 /* ===========================================================================
@@ -41,9 +42,9 @@
   align-items: center !important;
   justify-content: flex-start !important;
   pointer-events: auto !important;
-  /* Fit to content by default */
-  width: max-content !important;
-  min-width: 0 !important;
+  /* Fit to content by default: min-width as the floor avoids aspect-ratio fight */
+  width: auto !important;
+  min-width: max-content !important;
   max-width: 100% !important;
   height: 28px !important;
   min-height: 28px !important;
