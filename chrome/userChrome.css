@@ -29,9 +29,10 @@
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container,
 #tabbrowser-tabs tab-group[active] > .tab-group-label-container,
 #tabbrowser-tabs tab-group:not([collapsed]) > .tab-group-label-container {
-  display: flex !important;
+  display: inline-flex !important;
   flex-direction: row !important;
   align-items: center !important;
+  justify-content: center !important;
   pointer-events: auto !important;
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 65%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.4))) 80%, transparent) !important;
@@ -42,6 +43,7 @@
   min-height: 28px !important;
   padding: 0 10px !important;
   box-sizing: border-box !important;
+  overflow: hidden !important;
   transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, margin 0.2s ease !important;
 }
 
@@ -69,11 +71,11 @@
 }
 
 /* ---------------------------------------------------------------------------- */
-/* SIDEBAR ON THE LEFT (Default): Pill aligns Left, Chevron on Right            */
+/* SIDEBAR ON THE LEFT (Default): Attach to Inner (Right) Edge                  */
 /* ---------------------------------------------------------------------------- */
 #tabbrowser-tabs tab-group > .tab-group-label-container {
-  margin-left: 0 !important;
-  margin-right: auto !important;
+  margin-left: auto !important;
+  margin-right: 0 !important;
 }
 
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label {
@@ -87,11 +89,11 @@
 }
 
 /* ---------------------------------------------------------------------------- */
-/* SIDEBAR ON THE RIGHT: Pill aligns Right, Chevron on Left                    */
+/* SIDEBAR ON THE RIGHT: Attach to Inner (Left) Edge                           */
 /* ---------------------------------------------------------------------------- */
 #main-window[zen-right-side="true"] #tabbrowser-tabs tab-group > .tab-group-label-container {
-  margin-left: auto !important;
-  margin-right: 0 !important;
+  margin-left: 0 !important;
+  margin-right: auto !important;
 }
 
 #main-window[zen-right-side="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label {
