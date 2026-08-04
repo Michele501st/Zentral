@@ -1959,9 +1959,60 @@
       }
       const labelContainer = group.querySelector(".tab-group-label-container");
       if (labelContainer) {
-        labelContainer.style.setProperty("border-radius", "6px", "important");
+        // Override native Zen inline styles that force aspect-ratio:1 (circular badge)
+        labelContainer.style.setProperty("border-radius", "10px", "important");
+        labelContainer.style.setProperty("aspect-ratio", "auto", "important");
+        labelContainer.style.setProperty("align-self", "flex-start", "important");
+        labelContainer.style.setProperty("width", "fit-content", "important");
+        labelContainer.style.setProperty("max-width", "100%", "important");
+        labelContainer.style.setProperty("height", "28px", "important");
+        labelContainer.style.setProperty("min-height", "28px", "important");
+        labelContainer.style.setProperty("box-sizing", "border-box", "important");
+        labelContainer.style.setProperty("display", "flex", "important");
+        labelContainer.style.setProperty("flex-direction", "row", "important");
+        labelContainer.style.setProperty("align-items", "center", "important");
+        labelContainer.style.setProperty("padding", "0 10px", "important");
         const innerLabel = labelContainer.querySelector(".tab-group-label");
-        if (innerLabel) innerLabel.style.setProperty("border-radius", "6px", "important");
+        if (innerLabel) {
+          innerLabel.style.setProperty("border-radius", "10px", "important");
+          innerLabel.style.setProperty("width", "auto", "important");
+          innerLabel.style.setProperty("overflow", "visible", "important");
+        }
+        // Wire hover: expand to full-width on mouseenter, collapse on mouseleave
+        labelContainer.addEventListener("mouseenter", () => {
+          labelContainer.style.setProperty("align-self", "stretch", "important");
+          labelContainer.style.setProperty("width", "100%", "important");
+        });
+        labelContainer.addEventListener("mouseleave", () => {
+          labelContainer.style.setProperty("align-self", "flex-start", "important");
+          labelContainer.style.setProperty("width", "fit-content", "important");
+        });
+        // Also expand when hovering over any tab inside the group
+        const tabsObserved = new WeakSet();
+        const collapseTimer = { id: null };
+        const expandLabel = () => {
+          if (collapseTimer.id) { clearTimeout(collapseTimer.id); collapseTimer.id = null; }
+          labelContainer.style.setProperty("align-self", "stretch", "important");
+          labelContainer.style.setProperty("width", "100%", "important");
+        };
+        const collapseLabel = () => {
+          collapseTimer.id = setTimeout(() => {
+            labelContainer.style.setProperty("align-self", "flex-start", "important");
+            labelContainer.style.setProperty("width", "fit-content", "important");
+            collapseTimer.id = null;
+          }, 80);
+        };
+        // Observe tabs added to the group and attach hover listeners
+        const wireTabHover = (tab) => {
+          if (tabsObserved.has(tab)) return;
+          tabsObserved.add(tab);
+          tab.addEventListener("mouseenter", expandLabel);
+          tab.addEventListener("mouseleave", collapseLabel);
+        };
+        if (group.tabs) Array.from(group.tabs).forEach(wireTabHover);
+        new MutationObserver(() => {
+          if (group.tabs) Array.from(group.tabs).forEach(wireTabHover);
+        }).observe(group, { childList: true, subtree: true });
         
         let hoverTimer = null;
         labelContainer.addEventListener("mouseenter", () => {
