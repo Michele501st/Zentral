@@ -18,99 +18,85 @@
   display: flex !important;
   flex-direction: column !important;
   width: 100% !important;
+  margin: 2px 0 !important;
 }
 
-/* Neutralize native pill backgrounds in all states */
+/* Neutralize native pill backgrounds & aspect-ratio constraints */
 #tabbrowser-tabs tab-group > .tab-group-label-container,
+#tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container,
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container,
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label {
   --tab-group-color: transparent !important;
   background: transparent !important;
-  border-radius: 10px !important;
+  border-radius: 8px !important;
 }
 
-/* Base State: Compact Squircle Fit-Content Glassmorphism Pill */
+/* Base State: Full-Width Squircle Pill Aligned with Normal Tabs */
 #tabbrowser-tabs tab-group > .tab-group-label-container,
+#tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container,
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container,
 #tabbrowser-tabs tab-group[active] > .tab-group-label-container,
 #tabbrowser-tabs tab-group:not([collapsed]) > .tab-group-label-container {
-  display: inline-flex !important;
+  display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
+  justify-content: flex-start !important;
   pointer-events: auto !important;
-  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 65%, transparent) !important;
-  border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.4))) 80%, transparent) !important;
-  border-radius: 10px !important;
-  width: auto !important;
-  min-width: max-content !important;
+  width: 100% !important;
+  min-width: 100% !important;
   max-width: 100% !important;
-  height: 28px !important;
-  min-height: 28px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  aspect-ratio: auto !important;
+  border-radius: 8px !important;
+  margin: 0 !important;
   padding: 0 10px !important;
   box-sizing: border-box !important;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, margin 0.2s ease !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.15))) 50%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.3))) 70%, transparent) !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
 #tabbrowser-tabs tab-group > .tab-group-label-container:hover {
-  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.25))) 78%, transparent) !important;
-  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.5))) 90%, transparent) !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.25))) 65%, transparent) !important;
+  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.5))) 85%, transparent) !important;
 }
 
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label,
 #tabbrowser-tabs tab-group[active] > .tab-group-label-container .tab-group-label,
 #tabbrowser-tabs tab-group:not([collapsed]) > .tab-group-label-container .tab-group-label {
-  display: inline-block !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
   background-color: transparent !important;
   color: var(--zentral-tabgroup-contrast-color, inherit) !important;
   font-size: 12px !important;
   font-weight: 600 !important;
-  padding: 0 2px !important;
+  padding: 0 !important;
   margin: 0 !important;
-  width: auto !important;
-  min-width: auto !important;
-  max-width: none !important;
   white-space: nowrap !important;
-  overflow: visible !important;
-  flex: 1 1 auto !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  order: 2 !important;
   transition: color 0.15s ease !important;
 }
 
-/* ---------------------------------------------------------------------------- */
-/* SIDEBAR ON THE LEFT (Default): Attach to Inner (Right) Edge                  */
-/* ---------------------------------------------------------------------------- */
-#tabbrowser-tabs tab-group > .tab-group-label-container {
-  margin-left: auto !important;
-  margin-right: 0 !important;
-}
-
-#tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label {
-  order: 1 !important;
-}
-
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-icon {
-  order: 2 !important;
-  margin-left: 6px !important;
-  margin-right: 0 !important;
-}
-
-/* ---------------------------------------------------------------------------- */
-/* SIDEBAR ON THE RIGHT: Attach to Inner (Left) Edge                           */
-/* ---------------------------------------------------------------------------- */
-#main-window[zen-right-side="true"] #tabbrowser-tabs tab-group > .tab-group-label-container {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin-right: 8px !important;
   margin-left: 0 !important;
-  margin-right: auto !important;
-}
-
-#main-window[zen-right-side="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label {
-  order: 2 !important;
-}
-
-#main-window[zen-right-side="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-icon {
+  flex-shrink: 0 !important;
   order: 1 !important;
-  margin-left: 0 !important;
-  margin-right: 6px !important;
 }
 
 #tab-label-input {
@@ -121,19 +107,11 @@
   border-radius: 6px !important;
   padding: 2px 6px !important;
   font-size: 12px !important;
+  width: 100% !important;
 }
 
 tab-group .group-marker {
   display: none !important;
-}
-
-tab-group .tab-group-icon {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 14px !important;
-  height: 14px !important;
-  flex-shrink: 0 !important;
 }
 
 tab-group .tab-group-icon::after {
@@ -160,14 +138,15 @@ tab-group[collapsed] .tab-group-icon::after {
 
 /* Hierarchy & Nested Groups */
 tab-group tab-group {
-  margin-left: 10px !important;
+  margin-left: 12px !important;
   position: relative !important;
+  width: calc(100% - 12px) !important;
 }
 
 tab-group tab-group::before {
   content: "" !important;
   position: absolute !important;
-  left: -5px !important;
+  left: -6px !important;
   top: 0 !important;
   bottom: 0 !important;
   width: 1.5px !important;
@@ -183,13 +162,13 @@ tab-group tab-group::before {
 tab-group:not([split-view-group]) .tab-group-container {
   max-height: 100% !important;
   position: relative !important;
-  margin-inline-start: 10px !important;
+  margin-inline-start: 12px !important;
 }
 
 tab-group:not([split-view-group]) .tab-group-container::after {
   content: "" !important;
   position: absolute !important;
-  left: -5px !important;
+  left: -6px !important;
   top: 0 !important;
   background: var(--zen-colors-border, rgba(255, 255, 255, 0.15)) !important;
   height: 100% !important;
