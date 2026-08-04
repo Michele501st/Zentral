@@ -42,9 +42,9 @@
   align-items: center !important;
   justify-content: flex-start !important;
   pointer-events: auto !important;
-  /* Fit to content: align-self:flex-start prevents flex stretch to 100% */
+  /* Fit to title text + padding by default */
   align-self: flex-start !important;
-  width: auto !important;
+  width: max-content !important;
   min-width: max-content !important;
   max-width: 100% !important;
   height: 28px !important;
@@ -58,7 +58,7 @@
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.15))) 55%, transparent) !important;
   border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.3))) 70%, transparent) !important;
   /* Smooth expand on hover */
-  transition: width 0.2s ease, max-width 0.2s ease, background-color 0.2s ease, border-color 0.2s ease !important;
+  transition: width 0.2s ease, min-width 0.2s ease, max-width 0.2s ease, background-color 0.2s ease, border-color 0.2s ease !important;
 }
 
 /* ===========================================================================

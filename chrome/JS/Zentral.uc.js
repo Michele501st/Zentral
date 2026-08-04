@@ -1971,7 +1971,8 @@
           labelContainer.style.setProperty("border-radius", "10px", "important");
           labelContainer.style.setProperty("aspect-ratio", "auto", "important");
           labelContainer.style.setProperty("align-self", "flex-start", "important");
-          labelContainer.style.setProperty("width", "fit-content", "important");
+          labelContainer.style.setProperty("width", "max-content", "important");
+          labelContainer.style.setProperty("min-width", "max-content", "important");
           labelContainer.style.setProperty("max-width", "100%", "important");
           labelContainer.style.setProperty("height", "28px", "important");
           labelContainer.style.setProperty("min-height", "28px", "important");
@@ -2007,11 +2008,13 @@
           _isHovered = true;
           labelContainer.style.setProperty("align-self", "stretch", "important");
           labelContainer.style.setProperty("width", "100%", "important");
+          labelContainer.style.setProperty("min-width", "100%", "important");
         });
         labelContainer.addEventListener("mouseleave", () => {
           _isHovered = false;
           labelContainer.style.setProperty("align-self", "flex-start", "important");
-          labelContainer.style.setProperty("width", "fit-content", "important");
+          labelContainer.style.setProperty("width", "max-content", "important");
+          labelContainer.style.setProperty("min-width", "max-content", "important");
         });
         // Also expand when hovering over any tab inside the group
         const tabsObserved = new WeakSet();
@@ -2021,12 +2024,14 @@
           _isHovered = true;
           labelContainer.style.setProperty("align-self", "stretch", "important");
           labelContainer.style.setProperty("width", "100%", "important");
+          labelContainer.style.setProperty("min-width", "100%", "important");
         };
         const collapseLabel = () => {
           collapseTimer.id = setTimeout(() => {
             _isHovered = false;
             labelContainer.style.setProperty("align-self", "flex-start", "important");
-            labelContainer.style.setProperty("width", "fit-content", "important");
+            labelContainer.style.setProperty("width", "max-content", "important");
+            labelContainer.style.setProperty("min-width", "max-content", "important");
             collapseTimer.id = null;
           }, 80);
         };
