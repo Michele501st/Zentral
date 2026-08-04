@@ -42,7 +42,8 @@
   align-items: center !important;
   justify-content: flex-start !important;
   pointer-events: auto !important;
-  /* Fit to content by default: min-width as the floor avoids aspect-ratio fight */
+  /* Fit to content: align-self:flex-start prevents flex stretch to 100% */
+  align-self: flex-start !important;
   width: auto !important;
   min-width: max-content !important;
   max-width: 100% !important;
@@ -66,6 +67,7 @@
    =========================================================================== */
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container,
 #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container {
+  align-self: stretch !important;
   width: 100% !important;
   max-width: 100% !important;
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 65%, transparent) !important;
