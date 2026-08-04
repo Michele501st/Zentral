@@ -32,7 +32,7 @@
 }
 
 /* ===========================================================================
-   Glossy Squircle Pill with Soft Gradual Edges
+   Glossy Squircle Pill with Smooth Edges & Zero Outer Bloom
    =========================================================================== */
 #tabbrowser-tabs tab-group > .tab-group-label-container,
 #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container {
@@ -48,26 +48,26 @@
   min-height: 28px !important;
   max-height: 28px !important;
   aspect-ratio: auto !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   margin: 1px 0 !important;
   padding: 0 10px !important;
   box-sizing: border-box !important;
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.15))) 55%, transparent) !important;
-  background-image: linear-gradient(180deg, color-mix(in srgb, #ffffff 18%, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2)))) 0%, color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.15))) 55%, transparent) 100%) !important;
-  border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.3))) 45%, transparent) !important;
-  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.35), inset 0 -1px 2px rgba(0, 0, 0, 0.18), 0 2px 8px color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, black)) 20%, transparent) !important;
-  backdrop-filter: blur(12px) saturate(130%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(130%) !important;
-  transition: background-color 0.2s ease, background-image 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.02) 100%) !important;
+  border: 1px solid color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.25))) 30%, rgba(255, 255, 255, 0.15)) !important;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.12) !important;
+  backdrop-filter: blur(12px) saturate(120%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
 }
 
-/* Glossy Hover State */
+/* Glossy Hover State (No Outer Bloom) */
 #tabbrowser-tabs tab-group > .tab-group-label-container:hover,
 #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container {
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 70%, transparent) !important;
-  background-image: linear-gradient(180deg, color-mix(in srgb, #ffffff 28%, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.3)))) 0%, color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.2))) 70%, transparent) 100%) !important;
-  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.5))) 65%, transparent) !important;
-  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.5), inset 0 -1px 2px rgba(0, 0, 0, 0.25), 0 4px 12px color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, black)) 35%, transparent) !important;
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+  border-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, rgba(255, 255, 255, 0.4))) 45%, rgba(255, 255, 255, 0.25)) !important;
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.45), inset 0 -1px 1px rgba(0, 0, 0, 0.18) !important;
 }
 
 /* Label text */
@@ -91,11 +91,10 @@
   width: auto !important;
   max-width: 100% !important;
   order: 2 !important;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
   transition: color 0.15s ease !important;
 }
 
-/* Chevron icon */
+/* Chevron icon (matching text color) */
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-icon {
   display: inline-flex !important;
   align-items: center !important;
@@ -106,7 +105,7 @@
   margin-left: 0 !important;
   flex-shrink: 0 !important;
   order: 1 !important;
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25)) !important;
+  color: var(--zentral-tabgroup-contrast-color, inherit) !important;
 }
 
 #tab-label-input {
