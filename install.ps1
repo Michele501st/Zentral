@@ -142,7 +142,8 @@ $configJsContent = @(
 $configPrefsContent = @(
     'pref("general.config.filename", "config.js");',
     'pref("general.config.obscure_value", 0);',
-    'pref("general.config.sandbox_enabled", false);'
+    'pref("general.config.sandbox_enabled", false);',
+    'pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
 ) -join "`r`n"
 
 # Write UTF-8 WITHOUT BOM (essential for Firefox autoconfig parser)
@@ -195,8 +196,20 @@ foreach ($targetProfile in $targetProfiles) {
     if ($zentralCss) {
         Copy-Item -Path $zentralCss -Destination "$profileChrome\userChrome.css" -Force
     }
+
+    # Enable legacy userChrome.css stylesheet customization in profile user.js
+    $userJsPath = Join-Path $targetProfile "user.js"
+    $userJsPref = 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
+    if (Test-Path $userJsPath) {
+        $userJsContent = Get-Content $userJsPath -Raw
+        if ($userJsContent -notmatch "toolkit\.legacyUserProfileCustomizations\.stylesheets") {
+            Add-Content -Path $userJsPath -Value "`r`n$userJsPref"
+        }
+    } else {
+        [System.IO.File]::WriteAllText($userJsPath, "$userJsPref`r`n", $utf8NoBom)
+    }
 }
-Write-Host "  -> Installed Zentral.uc.js, userChrome.css, and loader engine to all profiles." -ForegroundColor Gray
+Write-Host "  -> Installed Zentral.uc.js, userChrome.css, user.js, and loader engine to all profiles." -ForegroundColor Gray
 
 Write-Host "[3/3] Finalizing setup..." -ForegroundColor Yellow
 Write-Host ""

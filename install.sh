@@ -59,6 +59,17 @@ if [ -f "$SCRIPT_DIR/chrome/userChrome.css" ]; then
     cp -f "$SCRIPT_DIR/chrome/userChrome.css" "$ZEN_PROFILE_DIR/chrome/userChrome.css"
 fi
 
+# Ensure userChrome.css is enabled in user.js
+USER_JS="$ZEN_PROFILE_DIR/user.js"
+PREF_LINE='user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
+if [ -f "$USER_JS" ]; then
+    if ! grep -q "toolkit.legacyUserProfileCustomizations.stylesheets" "$USER_JS"; then
+        echo "$PREF_LINE" >> "$USER_JS"
+    fi
+else
+    echo "$PREF_LINE" > "$USER_JS"
+fi
+
 echo ""
 echo "====================================================="
 echo " SUCCESS! Zentral has been installed successfully.  "
