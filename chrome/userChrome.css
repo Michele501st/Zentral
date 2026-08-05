@@ -39,7 +39,7 @@
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: flex-start !important;
+  justify-content: flex-end !important;
   pointer-events: auto !important;
   width: 100% !important;
   min-width: 100% !important;
@@ -61,6 +61,12 @@
   transition: background-color 0.2s ease, background-image 0.2s ease, box-shadow 0.2s ease !important;
 }
 
+/* Sidebar on Right side: align group labels to the left (facing page content) */
+html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-container,
+html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container {
+  justify-content: flex-start !important;
+}
+
 /* Glossy Hover State */
 #tabbrowser-tabs tab-group > .tab-group-label-container:hover,
 #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container {
@@ -77,7 +83,8 @@
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  flex: 1 1 auto !important;
+  flex: 0 1 auto !important;
+  text-align: right !important;
   background-color: transparent !important;
   color: var(--zentral-tabgroup-contrast-color, inherit) !important;
   font-size: 12px !important;
@@ -91,6 +98,16 @@
   max-width: 100% !important;
   order: 2 !important;
   transition: color 0.15s ease !important;
+}
+
+html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label {
+  text-align: left !important;
+}
+
+/* Hide chevron icon when user disables it in Zentral Settings */
+html[zentral-show-chevron="false"] #tabbrowser-tabs tab-group .tab-group-icon,
+html[zentral-show-chevron="false"] tab-group .tab-group-icon {
+  display: none !important;
 }
 
 /* Chevron icon (matching text color & clean background/border in open & collapsed states) */

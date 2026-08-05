@@ -90,7 +90,8 @@
       PREF_STATE: "zen.workspace.tabgroups.state",
       PREF_ENABLED: "zen.workspace.tabgroups.enabled",
       PREF_COLLAPSE_ON_LAUNCH: "zen.workspace.tabgroups.collapse_on_launch",
-      PREF_THUMBNAILS: "zen.workspace.tabgroups.thumbnails"
+      PREF_THUMBNAILS: "zen.workspace.tabgroups.thumbnails",
+      PREF_SHOW_CHEVRON: "zen.workspace.tabgroups.show_chevron"
     }
   };
 
@@ -124,7 +125,8 @@
         [Constants.TabGroups.PREF_STATE]: "{}",
         [Constants.TabGroups.PREF_ENABLED]: true,
         [Constants.TabGroups.PREF_COLLAPSE_ON_LAUNCH]: false,
-        [Constants.TabGroups.PREF_THUMBNAILS]: true
+        [Constants.TabGroups.PREF_THUMBNAILS]: true,
+        [Constants.TabGroups.PREF_SHOW_CHEVRON]: true
       };
     }
 
@@ -1626,7 +1628,16 @@
         popupset.appendChild(panel);
       }
       
+      this.applyChevronPref();
       Core.emit("tabGroupsInitComplete", this);
+    }
+
+    /**
+     * Reads show_chevron preference and sets zentral-show-chevron attribute on root.
+     */
+    applyChevronPref() {
+      const showChevron = Core.getPref(Constants.TabGroups.PREF_SHOW_CHEVRON);
+      document.documentElement.setAttribute("zentral-show-chevron", showChevron !== false ? "true" : "false");
     }
 
     /**
@@ -2025,6 +2036,8 @@
          * whenever Zen's own JS rewrites the element's style attribute.
          */
         const enforceRestingStyles = () => {
+          const isRightSidebar = document.documentElement.getAttribute("zen-sidebar-right") === "true" || document.getElementById("sidebar-box")?.getAttribute("positionend") === "true";
+          const alignment = isRightSidebar ? "flex-start" : "flex-end";
           labelContainer.style.setProperty("border-radius", "12px", "important");
           labelContainer.style.setProperty("aspect-ratio", "auto", "important");
           labelContainer.style.setProperty("align-self", "stretch", "important");
@@ -2037,6 +2050,7 @@
           labelContainer.style.setProperty("display", "flex", "important");
           labelContainer.style.setProperty("flex-direction", "row", "important");
           labelContainer.style.setProperty("align-items", "center", "important");
+          labelContainer.style.setProperty("justify-content", alignment, "important");
           labelContainer.style.setProperty("padding", "0 10px", "important");
         };
 
@@ -2047,6 +2061,7 @@
         if (innerLabel) {
           innerLabel.style.setProperty("border-radius", "12px", "important");
           innerLabel.style.setProperty("width", "auto", "important");
+          innerLabel.style.setProperty("flex", "0 1 auto", "important");
           innerLabel.style.setProperty("overflow", "hidden", "important");
           innerLabel.style.setProperty("text-overflow", "ellipsis", "important");
         }
@@ -3018,6 +3033,7 @@
       get("zs-tg-enabled").checked = Core.getPref(Constants.TabGroups.PREF_ENABLED);
       get("zs-tg-collapse").checked = Core.getPref(Constants.TabGroups.PREF_COLLAPSE_ON_LAUNCH);
       get("zs-tg-thumbnails").checked = Core.getPref(Constants.TabGroups.PREF_THUMBNAILS);
+      get("zs-tg-chevron").checked = Core.getPref(Constants.TabGroups.PREF_SHOW_CHEVRON) !== false;
     }
     
     /**
@@ -3035,10 +3051,12 @@
       Core.setPref(Constants.TabGroups.PREF_ENABLED, get("zs-tg-enabled").checked);
       Core.setPref(Constants.TabGroups.PREF_COLLAPSE_ON_LAUNCH, get("zs-tg-collapse").checked);
       Core.setPref(Constants.TabGroups.PREF_THUMBNAILS, get("zs-tg-thumbnails").checked);
+      Core.setPref(Constants.TabGroups.PREF_SHOW_CHEVRON, get("zs-tg-chevron").checked);
       
       this.close();
       // Apply immediate UI updates
       if (window.Zentral?.Apps) window.Zentral.Apps.renderGrid();
+      if (window.Zentral?.TabGroups) window.Zentral.TabGroups.applyChevronPref();
     }
     
     /* --------------------------------------------------------------------------
@@ -3474,6 +3492,17 @@
               </label>
             </div>
 
+            <div class="zs-row">
+              <div class="zs-label-container">
+                <span class="zs-label">Show Group Chevron</span>
+                <span class="zs-sublabel">Display expansion chevron icon near title</span>
+              </div>
+              <label class="zs-switch">
+                <input type="checkbox" id="zs-tg-chevron" />
+                <span class="zs-slider"></span>
+              </label>
+            </div>
+
             <button id="zs-tg-reset" class="zs-reset-btn">Reset Tab Groups Defaults</button>
           </div>
         </div>
@@ -3517,6 +3546,7 @@
         get("zs-tg-enabled").checked = true;
         get("zs-tg-collapse").checked = false;
         get("zs-tg-thumbnails").checked = true;
+        get("zs-tg-chevron").checked = true;
       });
       
       this.populate();
