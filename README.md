@@ -1,4 +1,4 @@
-# 🌟 Zentral - Unified Apps Grid & Enhanced Tab Groups for Zen Browser
+<img width="1919" height="1039" alt="Screenshot 2026-08-05 222553" src="https://github.com/user-attachments/assets/75325a03-a7a9-439b-8160-adf3b1c303a8" /><img width="1919" height="1040" alt="Screenshot 2026-08-05 222218" src="https://github.com/user-attachments/assets/472b0d52-8cdd-4476-850c-7ad2bb839a7a" /># 🌟 Zentral - Unified Apps Grid & Enhanced Tab Groups for Zen Browser
 
 ![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)
 ![License](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-orange.svg)
@@ -27,6 +27,13 @@
 
 ### ⚙️ 3. Native Settings UI
 - Integrated preferences modal dialog accessible directly from the app context menu to customize animation speeds, row caps, apps per row, and group defaults on the fly.
+
+<img width="1919" height="1040" alt="Screenshot 2026-08-05 220109" src="https://github.com/user-attachments/assets/e91ebf5a-4324-4c15-aaf7-b8fefc175553" />
+<img width="1919" height="1038" alt="Screenshot 2026-08-05 220048" src="https://github.com/user-attachments/assets/a3bcb5c5-b81a-4889-ae5a-4d984a2a3db4" />
+<img width="1919" height="1040" alt="Screenshot 2026-08-05 222218" src="https://github.com/user-attachments/assets/0d02f7d9-9e88-434e-8aba-0ebb3de49817" />
+<img width="1919" height="1039" alt="Screenshot 2026-08-05 222553" src="https://github.com/user-attachments/assets/449fde64-1f3b-4a2b-b917-d8fc9e29fedf" />
+<img width="1919" height="1040" alt="Screenshot 2026-08-05 222524" src="https://github.com/user-attachments/assets/686de32c-6866-4823-b749-a029c45f40d3" />
+
 
 ---
 
