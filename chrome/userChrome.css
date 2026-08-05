@@ -104,12 +104,6 @@ html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-con
   text-align: left !important;
 }
 
-/* Hide chevron icon when user disables it in Zentral Settings */
-html[zentral-show-chevron="false"] #tabbrowser-tabs tab-group .tab-group-icon,
-html[zentral-show-chevron="false"] tab-group .tab-group-icon {
-  display: none !important;
-}
-
 /* Chevron icon (matching text color & clean background/border in open & collapsed states) */
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-icon,
 #tabbrowser-tabs tab-group[collapsed] > .tab-group-label-container .tab-group-icon,
@@ -146,22 +140,51 @@ tab-group[collapsed] .tab-group-icon::before {
   background: none !important;
 }
 
-#tabbrowser-tabs tab-group .tab-group-icon image,
-#tabbrowser-tabs tab-group .tab-group-icon img,
-#tabbrowser-tabs tab-group .tab-group-icon svg,
-#tabbrowser-tabs tab-group .tab-group-icon label,
-#tabbrowser-tabs tab-group .tab-group-icon span,
+/* Complete obliteration of native image.group-marker and children inside .tab-group-icon */
+tab-group .group-marker,
+tab-group[collapsed] .group-marker,
+#tabbrowser-tabs tab-group .group-marker,
+#tabbrowser-tabs tab-group[collapsed] .group-marker,
+#tabbrowser-tabs tab-group .tab-group-icon .group-marker,
+#tabbrowser-tabs tab-group[collapsed] .tab-group-icon .group-marker,
+.tab-group-icon image,
+.tab-group-icon img,
+.tab-group-icon svg,
+.tab-group-icon label,
+.tab-group-icon span,
+.tab-group-icon > *,
 #tabbrowser-tabs tab-group .tab-group-icon > *,
 #tabbrowser-tabs tab-group[collapsed] .tab-group-icon > * {
   display: none !important;
   visibility: hidden !important;
   width: 0 !important;
   height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
   opacity: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  list-style-image: none !important;
+  background: none !important;
+  background-image: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
 }
 
-tab-group .group-marker {
+tab-group .group-marker::before,
+tab-group .group-marker::after,
+tab-group[collapsed] .group-marker::before,
+tab-group[collapsed] .group-marker::after,
+.group-marker::before,
+.group-marker::after {
   display: none !important;
+  content: none !important;
+  border: none !important;
 }
 
 tab-group .tab-group-icon::after {
@@ -186,9 +209,18 @@ tab-group[collapsed] .tab-group-icon::after {
   transform: rotate(-90deg) !important;
 }
 
-/* Hierarchy & Nested Groups */
+/* Hide chevron icon when user disables it in Zentral Settings (in all open & collapsed states) */
+html[zentral-show-chevron="false"] #tabbrowser-tabs tab-group .tab-group-icon,
+html[zentral-show-chevron="false"] #tabbrowser-tabs tab-group[collapsed] .tab-group-icon,
+html[zentral-show-chevron="false"] tab-group .tab-group-icon,
+html[zentral-show-chevron="false"] tab-group[collapsed] .tab-group-icon {
+  display: none !important;
+}
+
+/* Hierarchy & Nested Groups (Inner-edge alignment facing page content) */
 tab-group tab-group {
-  margin-left: 12px !important;
+  margin-right: 12px !important;
+  margin-left: 0 !important;
   position: relative !important;
   width: calc(100% - 12px) !important;
 }
@@ -196,7 +228,8 @@ tab-group tab-group {
 tab-group tab-group::before {
   content: "" !important;
   position: absolute !important;
-  left: -6px !important;
+  right: -6px !important;
+  left: auto !important;
   top: 0 !important;
   bottom: 0 !important;
   width: 1.5px !important;
@@ -212,18 +245,45 @@ tab-group tab-group::before {
 tab-group:not([split-view-group]) .tab-group-container {
   max-height: 100% !important;
   position: relative !important;
-  margin-inline-start: 12px !important;
+  margin-right: 12px !important;
+  margin-left: 0 !important;
+  margin-inline-start: 0 !important;
+  margin-inline-end: 12px !important;
 }
 
 tab-group:not([split-view-group]) .tab-group-container::after {
   content: "" !important;
   position: absolute !important;
-  left: -6px !important;
+  right: -6px !important;
+  left: auto !important;
   top: 0 !important;
   background: var(--zen-colors-border, rgba(255, 255, 255, 0.15)) !important;
   height: 100% !important;
   width: 1.5px !important;
   pointer-events: none !important;
+}
+
+/* Right Sidebar Mode Overrides (Inner-edge facing page content is on the LEFT) */
+html[zen-sidebar-right="true"] tab-group tab-group {
+  margin-left: 12px !important;
+  margin-right: 0 !important;
+}
+
+html[zen-sidebar-right="true"] tab-group tab-group::before {
+  left: -6px !important;
+  right: auto !important;
+}
+
+html[zen-sidebar-right="true"] tab-group:not([split-view-group]) .tab-group-container {
+  margin-left: 12px !important;
+  margin-right: 0 !important;
+  margin-inline-start: 12px !important;
+  margin-inline-end: 0 !important;
+}
+
+html[zen-sidebar-right="true"] tab-group:not([split-view-group]) .tab-group-container::after {
+  left: -6px !important;
+  right: auto !important;
 }
 
 tab-group:not([split-view-group]) .tab-group-container tab {
