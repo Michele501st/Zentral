@@ -1978,11 +1978,11 @@
         style.className = 'zentral-shadow-style';
         style.textContent = `
           * { border-radius: 6px !important; outline: none !important; }
+          .group-marker, .group-marker *, .tab-group-icon > image, .tab-group-icon > img, .tab-group-icon > svg:not(.zentral-chevron) {
+            display: none !important; visibility: hidden !important; width: 0 !important; height: 0 !important; opacity: 0 !important; list-style-image: none !important; background: none !important;
+          }
           .tab-group-icon, .tab-group-icon * { border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important; }
           .tab-group-icon::before { display: none !important; content: none !important; }
-          .tab-group-icon > image,
-          .tab-group-icon > img,
-          .tab-group-icon > svg:not(.zentral-chevron) { display: none !important; visibility: hidden !important; }
           :host([collapsed]) .tab-group-icon,
           :host([collapsed]) .tab-group-icon * { border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important; }
           :host([collapsed]) .tab-group-icon::before { display: none !important; content: none !important; }
@@ -1991,13 +1991,21 @@
         `;
         group.shadowRoot.appendChild(style);
       }
-      // Also clear any native children inside .tab-group-icon that are not our custom chevron
+      // Clear and hide any native children (like image.group-marker) inside .tab-group-icon
       const iconEl = group.querySelector('.tab-group-icon');
       if (iconEl) {
         Array.from(iconEl.children).forEach(child => {
           if (!child.classList.contains('zentral-chevron')) {
             child.style.setProperty('display', 'none', 'important');
             child.style.setProperty('visibility', 'hidden', 'important');
+            child.style.setProperty('width', '0', 'important');
+            child.style.setProperty('height', '0', 'important');
+            child.style.setProperty('min-width', '0', 'important');
+            child.style.setProperty('min-height', '0', 'important');
+            child.style.setProperty('opacity', '0', 'important');
+            child.style.setProperty('list-style-image', 'none', 'important');
+            child.style.setProperty('background', 'none', 'important');
+            child.setAttribute('hidden', 'true');
           }
         });
         iconEl.style.setProperty('border', 'none', 'important');
