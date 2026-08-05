@@ -32,14 +32,14 @@
 }
 
 /* ===========================================================================
-   Glossy Squircle Pill with 0% Transparency (100% Opaque Solid Color)
+   Smooth Translucent Pill Tinted with Group Color (No Edge Highlights)
    =========================================================================== */
 #tabbrowser-tabs tab-group > .tab-group-label-container,
 #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container {
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
-  justify-content: flex-end !important;
+  justify-content: center !important;
   pointer-events: auto !important;
   width: 100% !important;
   min-width: 100% !important;
@@ -48,34 +48,49 @@
   min-height: 28px !important;
   max-height: 28px !important;
   aspect-ratio: auto !important;
-  border-radius: 12px !important;
-  margin: 1px 0 !important;
-  padding: 0 10px !important;
+  border-radius: 14px !important;
+  margin: 2px 0 !important;
+  padding: 0 12px !important;
   box-sizing: border-box !important;
-  background-color: var(--zentral-custom-color, var(--tab-group-color, #333333)) !important;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 100%) !important;
+  opacity: 1 !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, #777777)) calc(var(--zentral-tabgroup-label-opacity, 0.85) * 100%), transparent) !important;
+  background-image: none !important;
   border: none !important;
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3), inset 0 -1px 1px rgba(0, 0, 0, 0.15) !important;
-  backdrop-filter: blur(12px) saturate(120%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(120%) !important;
-  transition: background-color 0.2s ease, background-image 0.2s ease, box-shadow 0.2s ease !important;
+  outline: none !important;
+  box-shadow: none !important;
+  backdrop-filter: blur(16px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
+  transition: background-color 0.2s ease !important;
 }
 
-/* Sidebar on Right side: align group labels to the left (facing page content) */
+/* Sidebar on Right side: center align labels */
 html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-container,
 html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container {
-  justify-content: flex-start !important;
+  justify-content: center !important;
 }
 
-/* Glossy Hover State */
+/* Smooth Translucent Hover State:
+   - Below 85%: Jump to 100% full group color opacity.
+   - At or above 85%: Traditional brightened highlight (15% white tint mix). */
 #tabbrowser-tabs tab-group > .tab-group-label-container:hover,
 #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container {
-  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, #333333)) 85%, #ffffff 15%) !important;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
-  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.45), inset 0 -1px 1px rgba(0, 0, 0, 0.2) !important;
+  opacity: 1 !important;
+  background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, #777777)) 85%, #ffffff 15%) !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-/* Label text */
+html[zentral-label-opacity-below-85="true"] #tabbrowser-tabs tab-group > .tab-group-label-container:hover,
+html[zentral-label-opacity-below-85="true"] #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container {
+  opacity: 1 !important;
+  background-color: var(--zentral-custom-color, var(--tab-group-color, #777777)) !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Label text - Dynamically Auto-Contrast (Black or White) based on Label Color */
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
 #tabbrowser-tabs tab-group:hover > .tab-group-label-container .tab-group-label,
 #tabbrowser-tabs tab-group[active] > .tab-group-label-container .tab-group-label,
@@ -83,11 +98,14 @@ html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-con
   display: flex !important;
   flex-direction: row !important;
   align-items: center !important;
+  justify-content: center !important;
   flex: 0 1 auto !important;
-  text-align: right !important;
+  text-align: center !important;
   background-color: transparent !important;
-  color: var(--zentral-tabgroup-contrast-color, inherit) !important;
-  font-size: 12px !important;
+  opacity: 1 !important;
+  color: var(--zentral-tabgroup-contrast-color, var(--atg-contrast-color, #ffffff)) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25) !important;
+  font-size: 12.5px !important;
   font-weight: 600 !important;
   padding: 0 !important;
   margin: 0 !important;
@@ -101,10 +119,10 @@ html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-con
 }
 
 html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label {
-  text-align: left !important;
+  text-align: center !important;
 }
 
-/* Chevron icon (matching text color & clean background/border in open & collapsed states) */
+/* Chevron icon - Dynamically Auto-Contrast (Black or White) based on Label Color */
 #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-icon,
 #tabbrowser-tabs tab-group[collapsed] > .tab-group-label-container .tab-group-icon,
 tab-group .tab-group-icon,
@@ -112,13 +130,16 @@ tab-group[collapsed] .tab-group-icon {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
+  opacity: 1 !important;
+  color: var(--zentral-tabgroup-contrast-color, var(--atg-contrast-color, #ffffff)) !important;
+  fill: var(--zentral-tabgroup-contrast-color, var(--atg-contrast-color, #ffffff)) !important;
+  stroke: var(--zentral-tabgroup-contrast-color, var(--atg-contrast-color, #ffffff)) !important;
   width: 14px !important;
   height: 14px !important;
   margin-right: 6px !important;
   margin-left: 0 !important;
   flex-shrink: 0 !important;
   order: 1 !important;
-  color: var(--zentral-tabgroup-contrast-color, inherit) !important;
   border: none !important;
   outline: none !important;
   box-shadow: none !important;

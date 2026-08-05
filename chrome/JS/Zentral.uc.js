@@ -91,7 +91,8 @@
       PREF_ENABLED: "zen.workspace.tabgroups.enabled",
       PREF_COLLAPSE_ON_LAUNCH: "zen.workspace.tabgroups.collapse_on_launch",
       PREF_THUMBNAILS: "zen.workspace.tabgroups.thumbnails",
-      PREF_SHOW_CHEVRON: "zen.workspace.tabgroups.show_chevron"
+      PREF_SHOW_CHEVRON: "zen.workspace.tabgroups.show_chevron",
+      PREF_LABEL_OPACITY: "zen.workspace.tabgroups.label_opacity"
     }
   };
 
@@ -126,7 +127,8 @@
         [Constants.TabGroups.PREF_ENABLED]: true,
         [Constants.TabGroups.PREF_COLLAPSE_ON_LAUNCH]: false,
         [Constants.TabGroups.PREF_THUMBNAILS]: true,
-        [Constants.TabGroups.PREF_SHOW_CHEVRON]: true
+        [Constants.TabGroups.PREF_SHOW_CHEVRON]: true,
+        [Constants.TabGroups.PREF_LABEL_OPACITY]: 85
       };
     }
 
@@ -776,21 +778,31 @@
         fragment.appendChild(btn);
       });
 
+      targetContainer.appendChild(fragment);
+
       if (this.#state.apps.length < maxApps) {
-        const addBtn = document.createElement("button"); addBtn.className = "zen-app-tile zen-app-add-btn"; addBtn.title = "Add current tab to Apps Section";
+        const addBtn = document.createElement("button"); 
+        addBtn.className = "zen-app-tile zen-app-add-btn"; 
+        addBtn.title = "Add current tab to Apps Section";
         addBtn.appendChild(this.#createSVG(`<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`));
-        addBtn.addEventListener("mousedown", (e) => {
+        
+        addBtn.addEventListener("click", (e) => {
           if (e.button !== 0) return;
+          e.preventDefault();
+          e.stopPropagation();
           const tab = gBrowser.selectedTab; if (!tab) return;
           const url = tab.linkedBrowser?.currentURI?.spec || "about:blank";
           const title = tab.label || url;
           const icon = (typeof gBrowser.getIcon === "function" ? gBrowser.getIcon(tab) : null) || tab.getAttribute("image") || tab.image || "";
           if (url !== "about:blank") this.addApp(url, title, icon);
         });
-        fragment.appendChild(addBtn);
+
+        addBtn.addEventListener("mousedown", (e) => {
+          if (e.button === 0) e.stopPropagation();
+        });
+
+        this.#dom.grid.appendChild(addBtn);
       }
-      
-      targetContainer.appendChild(fragment);
 
       if (this.#dom.scrollBox) {
         if (this.#state.apps.length >= 8) {
@@ -1051,30 +1063,125 @@
       this.#state.appBrowsers.set(app.id, b);
       return { browser: b, isNew: true };
     }
-
     /**
-     * Starts animation frame tracking loop to align panel position relative to sidebar bounds.
+     * Starts sidebar-aware position tracking for the floating app panel.
+     *
+     * Zen Browser's compact sidebar mode hides and expands via:
+     *   (a) CSS width transitions on #sidebar-box / tabContainer
+     *   (b) DOM attribute changes on document.documentElement (zen-sidebar-expanded, etc.)
+     *   (c) CSS transform transitions (which do NOT trigger ResizeObserver)
+     *
+     * To track smooth hover-expands without burning CPU on a permanent 60fps loop,
+     * this uses a "RAF Burst" mechanism: a requestAnimationFrame loop runs only
+     * while the mouse is moving or a CSS transition is active, and lingers for 500ms.
      */
     startPositionTracking() {
-      if (this.#state.positionRafId) return;
-      const loop = () => {
+      if (this._isTrackingPosition) return;
+      this._isTrackingPosition = true;
+
+      this.positionPanel(); // Immediate initial positioning
+
+      const reposition = () => {
         if (this.#state.activeAppId && this.#dom.root?.hasAttribute("open")) {
           this.positionPanel();
-          this.#state.positionRafId = requestAnimationFrame(loop);
-        } else {
-          this.#state.positionRafId = null;
         }
       };
-      this.#state.positionRafId = requestAnimationFrame(loop);
+
+      // --- Vector 1: RAF Burst (Smooth tracking for transforms/hovers) ---
+      let rafId = null;
+      let lastActivityTime = 0;
+
+      const rafLoop = () => {
+        if (!this._isTrackingPosition) return;
+        reposition();
+        
+        if (Date.now() - lastActivityTime < 500) {
+          rafId = requestAnimationFrame(rafLoop);
+        } else {
+          rafId = null;
+        }
+      };
+
+      const triggerBurst = () => {
+        lastActivityTime = Date.now();
+        if (!rafId) {
+          rafId = requestAnimationFrame(rafLoop);
+        }
+      };
+
+      this._mouseMoveHandler = triggerBurst;
+      window.addEventListener("mousemove", this._mouseMoveHandler, { passive: true });
+
+      this._globalTransitionHandler = () => {
+        reposition();
+        triggerBurst();
+      };
+      window.addEventListener("transitionstart", this._globalTransitionHandler, { passive: true });
+      window.addEventListener("transitionend", this._globalTransitionHandler, { passive: true });
+
+      // --- Vector 2: ResizeObserver ---
+      // Catches structural layout box changes (like window resize or sidebar toggle)
+      this._sidebarResizeObserver = new ResizeObserver(reposition);
+      const idsToObserve = [
+        "sidebar-box", "sidebar-container", "vertical-tabs", 
+        "navigator-toolbox", "zen-appcontent-navbar-wrapper"
+      ];
+      idsToObserve.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) this._sidebarResizeObserver.observe(el);
+      });
+      if (gBrowser?.tabContainer) {
+        this._sidebarResizeObserver.observe(gBrowser.tabContainer);
+      }
+
+      // --- Vector 3: MutationObserver ---
+      // Catches Zen's live DOM attributes
+      this._docAttrObserver = new MutationObserver((mutations) => {
+        reposition();
+        triggerBurst(); // A class change might kick off an animation
+      });
+      this._docAttrObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: [
+          "zen-sidebar-expanded",
+          "zen-compact-mode",
+          "zen-sidebar-hidden",
+          "zen-right-side",
+          "style",
+        ],
+      });
+
+      // --- Vector 4: window resize fallback ---
+      this._windowResizeListener = reposition;
+      window.addEventListener("resize", this._windowResizeListener, { passive: true });
     }
 
     /**
-     * Stops panel position tracking frame loop.
+     * Stops sidebar-aware position tracking and disconnects all observers/listeners.
      */
     stopPositionTracking() {
-      if (this.#state.positionRafId) {
-        cancelAnimationFrame(this.#state.positionRafId);
-        this.#state.positionRafId = null;
+      this._isTrackingPosition = false;
+      
+      if (this._sidebarResizeObserver) {
+        this._sidebarResizeObserver.disconnect();
+        this._sidebarResizeObserver = null;
+      }
+      if (this._docAttrObserver) {
+        this._docAttrObserver.disconnect();
+        this._docAttrObserver = null;
+      }
+      if (this._globalTransitionHandler) {
+        window.removeEventListener("transitionstart", this._globalTransitionHandler);
+        window.removeEventListener("transitionend", this._globalTransitionHandler);
+        this._globalTransitionHandler = null;
+      }
+      if (this._mouseMoveHandler) {
+        window.removeEventListener("mousemove", this._mouseMoveHandler);
+        this._mouseMoveHandler = null;
+      }
+      if (this._windowResizeListener) {
+        window.removeEventListener("resize", this._windowResizeListener);
+        this._windowResizeListener = null;
       }
     }
 
@@ -1147,7 +1254,7 @@
         root.style.left = targetLeft + "px";
         root.style.transform = "translateX(0)";
       }
-      console.log("[ZentralApps] positionPanel - top:", top + "px", "left:", targetLeft + "px", "right:", targetRight + "px", "isSidebarRight:", this.isSidebarRight());
+      // console.log removed — was firing at 60fps causing console spam (C-04)
     }
 
     /**
@@ -1482,18 +1589,8 @@
         }
       });
 
-      if (window.gZenWorkspaces && !window.gZenWorkspaces._zentralWorkspaceHooked) {
-        window.gZenWorkspaces._zentralWorkspaceHooked = true;
-        const origChange = window.gZenWorkspaces.changeWorkspaceWithID;
-        if (typeof origChange === "function") {
-          const self = this;
-          window.gZenWorkspaces.changeWorkspaceWithID = async function(...args) {
-            const res = await origChange.apply(this, args);
-            try { self.renderGrid(); } catch(e) {}
-            return res;
-          };
-        }
-      }
+      // Note: gZenWorkspaces monkey-patch removed (H-02) — the TabSelect listener
+      // above already handles workspace switches reliably without fragile function wrapping.
 
       const sideObserver = new window.MutationObserver((mutations) => {
         for (const m of mutations) {
@@ -1512,7 +1609,14 @@
       };
       Services.prefs.addObserver("zen.view.use-single-toolbar", layoutObserver, false);
       Services.prefs.addObserver("zen.view.sidebar-expanded", layoutObserver, false);
-      
+
+      // Clean up pref observers when window closes to prevent ghost observers (H-03)
+      window.addEventListener("unload", () => {
+        try { Services.prefs.removeObserver("zen.view.use-single-toolbar", layoutObserver); } catch (_) {}
+        try { Services.prefs.removeObserver("zen.view.sidebar-expanded", layoutObserver); } catch (_) {}
+        this.stopPositionTracking();
+      }, { once: true });
+
       setTimeout(this.repositionGrid, 200);
     }
   }
@@ -1539,6 +1643,12 @@
       colorPickerPanel: null
     };
 
+    /** @private Tracks which groups have been processed this session (replaces fragile DOM attribute) */
+    #processedGroups = new WeakSet();
+
+    /** @private Tracks per-group style MutationObserver instances for cleanup on group removal */
+    #groupObservers = new WeakMap();
+
     /**
      * Constructs ZentralTabGroups instance and binds context methods.
      */
@@ -1564,6 +1674,36 @@
       const words = name.trim().split(/\s+/);
       if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
       return (words[0][0] + (words[1] ? words[1][0] : '')).toUpperCase();
+    }
+
+    /**
+     * Safely schedules or executes hiding of the tab group tooltip panel,
+     * ensuring it does NOT close if the user is currently hovering over the popup or label.
+     * @param {number} [delayMs=350] - Delay before hide check in milliseconds.
+     */
+    safeHideTooltip(delayMs = 350) {
+      if (window.zentralTooltipHideTimer) {
+        clearTimeout(window.zentralTooltipHideTimer);
+        window.zentralTooltipHideTimer = null;
+      }
+      window.zentralTooltipHideTimer = setTimeout(() => {
+        const panel = document.getElementById("zentral-tabgroup-tooltip");
+        const container = document.getElementById("zentral-tabgroup-tooltip-container");
+        if (!panel || typeof panel.hidePopup !== "function") return;
+
+        // Check if mouse is currently hovering over panel, container, or active label
+        const isHovered =
+          (panel.matches && panel.matches(":hover")) ||
+          (container && container.matches && container.matches(":hover")) ||
+          !!document.querySelector('[zentral-hover="true"]:hover');
+
+        if (isHovered) {
+          // User is hovering the popup or label — keep it open!
+          return;
+        }
+
+        panel.hidePopup();
+      }, delayMs);
     }
 
     /**
@@ -1598,6 +1738,10 @@
       };
       updateSidebarAttr();
       Services.prefs.addObserver(prefName, updateSidebarAttr, false);
+      // Clean up pref observer on window close to prevent ghost observers (H-03)
+      window.addEventListener("unload", () => {
+        try { Services.prefs.removeObserver(prefName, updateSidebarAttr); } catch (_) {}
+      }, { once: true });
 
       // Tooltip injection (XUL panel with noautohide=true to avoid stealing click events)
       if (!document.getElementById("zentral-tabgroup-tooltip")) {
@@ -1608,20 +1752,25 @@
         panel.setAttribute("type", "arrow");
         panel.setAttribute("role", "tooltip");
 
-        panel.addEventListener("mouseenter", () => {
-          if (window.zentralTooltipHideTimer) clearTimeout(window.zentralTooltipHideTimer);
-        });
-        panel.addEventListener("mouseleave", () => {
-          window.zentralTooltipHideTimer = setTimeout(() => {
-            if (panel.hidePopup) panel.hidePopup();
-          }, 200);
-        });
+        const cancelHideTimer = () => {
+          if (window.zentralTooltipHideTimer) {
+            clearTimeout(window.zentralTooltipHideTimer);
+            window.zentralTooltipHideTimer = null;
+          }
+        };
+
+        panel.addEventListener("mouseenter", cancelHideTimer);
+        panel.addEventListener("mouseleave", () => this.safeHideTooltip(350));
+        panel.addEventListener("mouseover", cancelHideTimer);
 
         const container = document.createElement("div");
         container.id = "zentral-tabgroup-tooltip-container";
         container.style.display = "flex";
         container.style.flexDirection = "column";
         container.style.overflowY = "auto";
+        container.addEventListener("mouseenter", cancelHideTimer);
+        container.addEventListener("mouseleave", () => this.safeHideTooltip(350));
+        container.addEventListener("mouseover", cancelHideTimer);
         panel.appendChild(container);
 
         const popupset = document.getElementById("mainPopupSet") || document.documentElement;
@@ -1629,6 +1778,7 @@
       }
       
       this.applyChevronPref();
+      this.applyLabelOpacityPref();
       Core.emit("tabGroupsInitComplete", this);
     }
 
@@ -1638,6 +1788,16 @@
     applyChevronPref() {
       const showChevron = Core.getPref(Constants.TabGroups.PREF_SHOW_CHEVRON);
       document.documentElement.setAttribute("zentral-show-chevron", showChevron !== false ? "true" : "false");
+    }
+
+    /**
+     * Reads label_opacity preference (0-100) and sets --zentral-tabgroup-label-opacity CSS variable and state attribute on root.
+     */
+    applyLabelOpacityPref() {
+      const opacityPct = Core.getPref(Constants.TabGroups.PREF_LABEL_OPACITY);
+      const val = typeof opacityPct === "number" ? Math.max(0, Math.min(100, opacityPct)) : 85;
+      document.documentElement.style.setProperty("--zentral-tabgroup-label-opacity", (val / 100).toFixed(2));
+      document.documentElement.setAttribute("zentral-label-opacity-below-85", val < 85 ? "true" : "false");
     }
 
     /**
@@ -1881,7 +2041,14 @@
             }
             
             for (const node of mutation.removedNodes) {
-               if (node.nodeType === Node.ELEMENT_NODE && node.tagName?.toUpperCase() === "TAB-GROUP") needsSave = true;
+              if (node.nodeType === Node.ELEMENT_NODE && node.tagName?.toUpperCase() === "TAB-GROUP") {
+                needsSave = true;
+                // Disconnect the per-group style MutationObserver to prevent memory leak
+                const obs = this.#groupObservers.get(node);
+                if (obs) { obs.disconnect(); this.#groupObservers.delete(node); }
+                // Clear from processedGroups so it can be re-processed if re-created
+                this.#processedGroups.delete(node);
+              }
             }
           }
         }
@@ -2008,7 +2175,9 @@
      * @param {Element} group - Tab group DOM element.
      */
     processGroup(group) {
-      if (group.hasAttribute("data-close-button-added") || group.classList.contains("zen-folder") || group.hasAttribute("zen-folder") || group.hasAttribute("split-view-group")) {
+      // Use a WeakSet instead of a DOM attribute to avoid persisting across restarts
+      // and to prevent guard bypasses when native code resets group attributes.
+      if (this.#processedGroups.has(group) || group.classList.contains("zen-folder") || group.hasAttribute("zen-folder") || group.hasAttribute("split-view-group")) {
         return;
       }
       group.style.setProperty("border-radius", "6px", "important");
@@ -2065,9 +2234,7 @@
          * whenever Zen's own JS rewrites the element's style attribute.
          */
         const enforceRestingStyles = () => {
-          const isRightSidebar = document.documentElement.getAttribute("zen-sidebar-right") === "true" || document.getElementById("sidebar-box")?.getAttribute("positionend") === "true";
-          const alignment = isRightSidebar ? "flex-start" : "flex-end";
-          labelContainer.style.setProperty("border-radius", "12px", "important");
+          labelContainer.style.setProperty("border-radius", "14px", "important");
           labelContainer.style.setProperty("aspect-ratio", "auto", "important");
           labelContainer.style.setProperty("align-self", "stretch", "important");
           labelContainer.style.setProperty("width", "100%", "important");
@@ -2079,8 +2246,14 @@
           labelContainer.style.setProperty("display", "flex", "important");
           labelContainer.style.setProperty("flex-direction", "row", "important");
           labelContainer.style.setProperty("align-items", "center", "important");
-          labelContainer.style.setProperty("justify-content", alignment, "important");
+          labelContainer.style.setProperty("justify-content", "center", "important");
           labelContainer.style.setProperty("padding", "0 10px", "important");
+          // Sync chevron icon visibility with the pref to prevent CSS vs inline-style conflict (H-05)
+          const iconEl = labelContainer.querySelector(".tab-group-icon");
+          if (iconEl) {
+            const showChevron = Core.getPref(Constants.TabGroups.PREF_SHOW_CHEVRON) !== false;
+            iconEl.style.setProperty("display", showChevron ? "inline-flex" : "none", "important");
+          }
         };
 
         // Apply immediately
@@ -2104,6 +2277,8 @@
           _styleGuard = false;
         });
         styleWatcher.observe(labelContainer, { attributes: true, attributeFilter: ["style"] });
+        // Track for cleanup when this group is removed from the DOM (M-02)
+        this.#groupObservers.set(group, styleWatcher);
 
         // Labels are always full-width — no hover expand/collapse needed.
         
@@ -2178,17 +2353,14 @@
                   container.appendChild(row);
                 });
               }
-              if (panel.openPopup) panel.openPopup(labelContainer, "end_before", 0, 0, false, false);
+              if (panel.openPopup) panel.openPopup(labelContainer, "end_before", -4, 0, false, false);
             }
           }, 350);
         });
         labelContainer.addEventListener("mouseleave", () => {
           labelContainer.removeAttribute("zentral-hover");
           if (hoverTimer) clearTimeout(hoverTimer);
-          window.zentralTooltipHideTimer = setTimeout(() => {
-            const panel = document.getElementById("zentral-tabgroup-tooltip");
-            if (panel && panel.hidePopup) panel.hidePopup();
-          }, 200);
+          this.safeHideTooltip(350);
         });
         labelContainer.addEventListener("mousedown", () => {
           if (hoverTimer) clearTimeout(hoverTimer);
@@ -2229,7 +2401,8 @@
       }
 
       group.classList.remove('tab-group-editor-mode-create');
-      group.setAttribute("data-close-button-added", "true");
+      this.#processedGroups.add(group);
+      group.setAttribute("data-close-button-added", "true"); // Kept for external compatibility
 
       this.addContextMenu(group);
 
@@ -2271,8 +2444,10 @@
                 const hex = currentColor.startsWith("#") && currentColor.length >= 7 ? currentColor.substring(0,7) : "#2b2b2b";
                 picker.querySelector("#ztg-input-hex").value = hex;
                 const bigint = parseInt(hex.slice(1), 16);
-                picker.querySelector("#ztg-input-rgb").value = `${(bigint >> 16) & 255}, ${(bigint >> 8) & 255}, ${bigint & 255}`;
-                picker.querySelector("#ztg-native-color").value = hex;
+                const rgbInput = picker.querySelector("#ztg-input-rgb");
+                if (rgbInput) rgbInput.value = `${(bigint >> 16) & 255}, ${(bigint >> 8) & 255}, ${bigint & 255}`;
+                const nativeColorInput = picker.querySelector("#ztg-native-color");
+                if (nativeColorInput) nativeColorInput.value = hex;
              }
           }
         });
@@ -2468,14 +2643,24 @@
 
       satValCanvas.addEventListener("mousedown", (e) => { isDraggingSatVal = true; pickSatValColor(e); });
       hueCanvas.addEventListener("mousedown", (e) => { isDraggingHue = true; pickHueColor(e); });
-      window.addEventListener("mousemove", (e) => {
+
+      // Convert to named functions so they can be removed on window unload (C-03).
+      // Anonymous arrow functions added to window can never be removed, causing a
+      // permanent mousemove listener that runs for the entire browser session.
+      const onSatHueMouseMove = (e) => {
         if (isDraggingSatVal) pickSatValColor(e);
         if (isDraggingHue) pickHueColor(e);
-      });
-      window.addEventListener("mouseup", () => {
+      };
+      const onSatHueMouseUp = () => {
         isDraggingSatVal = false;
         isDraggingHue = false;
-      });
+      };
+      window.addEventListener("mousemove", onSatHueMouseMove);
+      window.addEventListener("mouseup", onSatHueMouseUp);
+      window.addEventListener("unload", () => {
+        window.removeEventListener("mousemove", onSatHueMouseMove);
+        window.removeEventListener("mouseup", onSatHueMouseUp);
+      }, { once: true });
 
       panel.querySelector("#ztg-btn-wheel").addEventListener("click", () => {
         const paletteContainer = panel.querySelector("#ztg-palette-container");
@@ -2739,12 +2924,17 @@
             });
           }
 
-          // 3. Now that all tabs are safely outside the group DOM node, remove the empty group
-          setTimeout(() => {
-            try {
-              group.remove();
-            } catch (e) {}
-          }, 50);
+          // 3. Remove the group via the native API so Zen's internal registry stays consistent.
+          // Fall back to raw DOM removal if the native API is unavailable.
+          try {
+            if (typeof gBrowser?.removeTabGroup === "function") {
+              gBrowser.removeTabGroup(group);
+            } else {
+              setTimeout(() => { try { group.remove(); } catch (_) {} }, 50);
+            }
+          } catch (e) {
+            setTimeout(() => { try { group.remove(); } catch (_) {} }, 50);
+          }
 
         } catch (e) {
           console.error("[ZentralTabGroups] Error ungrouping tabs:", e);
@@ -2831,20 +3021,25 @@
      * @returns {string} 'black' or 'white'.
      */
     getContrastColor(colorStr) {
+      if (!colorStr) return "#ffffff";
       let r, g, b;
-      if (colorStr.startsWith("rgb")) {
-        const match = colorStr.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      const str = colorStr.trim();
+      if (str.startsWith("rgb")) {
+        const match = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
         if (match) { r = parseInt(match[1]); g = parseInt(match[2]); b = parseInt(match[3]); }
-      } else if (colorStr.startsWith("#")) {
-        const hex = colorStr.replace("#", "");
-        if (hex.length >= 6) {
+      } else if (str.startsWith("#")) {
+        const hex = str.replace("#", "");
+        if (hex.length === 3) {
+          r = parseInt(hex[0] + hex[0], 16); g = parseInt(hex[1] + hex[1], 16); b = parseInt(hex[2] + hex[2], 16);
+        } else if (hex.length >= 6) {
           r = parseInt(hex.substr(0, 2), 16); g = parseInt(hex.substr(2, 2), 16); b = parseInt(hex.substr(4, 2), 16);
         }
       }
       if (r !== undefined && g !== undefined && b !== undefined) {
-        return ((0.299 * r + 0.587 * g + 0.114 * b) / 255) > 0.5 ? "black" : "white";
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.55 ? "#111111" : "#ffffff";
       }
-      return "black";
+      return "#ffffff";
     }
 
     /**
@@ -2923,18 +3118,28 @@
       try {
         const state = {};
         document.querySelectorAll("tab-group:not([split-view-group])").forEach(group => {
-          if (group.id) {
-            const parent = group.parentElement ? group.parentElement.closest("tab-group, zen-folder") : null;
-            let index = -1;
-            if (parent) {
-              index = Array.from(parent.children).indexOf(group);
-            }
-            state[group.id] = {
-              collapsed: group.hasAttribute("collapsed"),
-              parentId: parent ? parent.id : null,
-              index: index
-            };
-          }
+          if (!group.id) return;
+
+          // Nearest tab-group or zen-folder ancestor (null = top-level)
+          const parent = group.parentElement?.closest("tab-group, zen-folder") ?? null;
+
+          // Count ONLY tab-group siblings (not tabs or other elements) for a stable,
+          // platform-independent index. This is the key fix for H-01:
+          // previously Array.from(parent.children).indexOf(group) included tab nodes,
+          // making indices unstable across restarts.
+          const posContainer = parent || group.parentElement;
+          const groupSiblings = posContainer
+            ? Array.from(posContainer.children).filter(
+                el => el.tagName?.toLowerCase() === "tab-group" && !el.hasAttribute("split-view-group")
+              )
+            : [];
+          const index = groupSiblings.indexOf(group); // -1 should never occur for an existing child
+
+          state[group.id] = {
+            collapsed: group.hasAttribute("collapsed"),
+            parentId: parent?.id ?? null,
+            index,
+          };
         });
         Core.setPref(Constants.TabGroups.PREF_STATE, JSON.stringify(state));
       } catch (e) {
@@ -2951,50 +3156,65 @@
         const forceCollapse = Core.getPref(Constants.TabGroups.PREF_COLLAPSE_ON_LAUNCH);
         if (!stateStr || stateStr === "{}") return;
         const state = JSON.parse(stateStr);
-        
-        // Sort by index so we insert items in the correct order if multiple groups are at the same level
-        const groupsToProcess = Array.from(document.querySelectorAll("tab-group:not([split-view-group])")).sort((a, b) => {
-           const aIdx = state[a.id]?.index || 0;
-           const bIdx = state[b.id]?.index || 0;
-           return aIdx - bIdx;
+
+        // Sort ascending by saved index. Use Infinity (not || 0) for unknown/new groups
+        // so they go to the end rather than collapsing to position 0 — this was the
+        // root cause of H-04: || 0 made index -1 and undefined indistinguishable.
+        const groupsToProcess = Array.from(
+          document.querySelectorAll("tab-group:not([split-view-group])")
+        ).sort((a, b) => {
+          const aIdx = state[a.id]?.index ?? Infinity;
+          const bIdx = state[b.id]?.index ?? Infinity;
+          return aIdx - bIdx;
         });
 
-        // Pass 1: Reconstruct the DOM hierarchy
-        groupsToProcess.forEach(group => {
-          if (!group.id) return;
-          const groupState = state[group.id];
-          if (!groupState) return;
-
-          if (groupState.parentId) {
+        // Pass 1: Reconstruct the DOM nesting for groups that have a saved parentId.
+        // We only touch nested groups here; top-level order is handled by the native
+        // session-restore which Zentral cannot and should not override.
+        groupsToProcess
+          .filter(g => state[g.id]?.parentId)
+          .forEach(group => {
+            const groupState = state[group.id];
             const parent = document.getElementById(groupState.parentId);
-            if (parent && !group.contains(parent)) {
-              const targetIndex = groupState.index !== undefined ? groupState.index : -1;
-              const currentIndex = Array.from(parent.children).indexOf(group);
-              
-              if (targetIndex >= 0 && currentIndex !== targetIndex) {
-                 let refNodeIndex = targetIndex;
-                 if (currentIndex !== -1 && currentIndex < targetIndex) {
-                    refNodeIndex = targetIndex + 1;
-                 }
-                 const refNode = parent.children[refNodeIndex];
-                 if (refNode) {
-                    parent.insertBefore(group, refNode);
-                 } else {
-                    parent.appendChild(group);
-                 }
-              } else if (currentIndex === -1) {
-                 parent.appendChild(group);
-              }
-            }
-          }
-        });
+            if (!parent || group.contains(parent)) return; // Guard: avoid circular nesting
 
-        // Pass 2: Restore collapsed state
+            // Build the reference sibling list from tab-group children ONLY (not tabs).
+            // Exclude the group itself from the list so the target index is stable.
+            const freshGroupChildren = Array.from(parent.children).filter(
+              el =>
+                el.tagName?.toLowerCase() === "tab-group" &&
+                !el.hasAttribute("split-view-group") &&
+                el !== group
+            );
+
+            const targetIndex = groupState.index ?? freshGroupChildren.length;
+
+            // Skip if already nested at the correct position
+            const alreadyInParent = group.parentElement === parent;
+            if (alreadyInParent) {
+              const currentIdx = Array.from(parent.children)
+                .filter(
+                  el => el.tagName?.toLowerCase() === "tab-group" && !el.hasAttribute("split-view-group")
+                )
+                .indexOf(group);
+              if (currentIdx === targetIndex) return;
+            }
+
+            // Insert before the target sibling, or append if at the end
+            const refSibling = freshGroupChildren[targetIndex] ?? null;
+            if (refSibling) {
+              parent.insertBefore(group, refSibling);
+            } else {
+              parent.appendChild(group);
+            }
+          });
+
+        // Pass 2: Restore collapsed states.
         groupsToProcess.forEach(group => {
           if (!group.id) return;
           const groupState = state[group.id];
           if (!groupState) return;
-          
+
           if (forceCollapse) {
             if (!group.hasAttribute("collapsed")) {
               group.setAttribute("collapsed", "true");
@@ -3076,6 +3296,11 @@
       get("zs-tg-collapse").checked = Core.getPref(Constants.TabGroups.PREF_COLLAPSE_ON_LAUNCH);
       get("zs-tg-thumbnails").checked = Core.getPref(Constants.TabGroups.PREF_THUMBNAILS);
       get("zs-tg-chevron").checked = Core.getPref(Constants.TabGroups.PREF_SHOW_CHEVRON) !== false;
+      const opacity = Core.getPref(Constants.TabGroups.PREF_LABEL_OPACITY);
+      if (get("zs-tg-opacity")) {
+        get("zs-tg-opacity").value = opacity;
+        if (get("zs-tg-opacity-val")) get("zs-tg-opacity-val").textContent = opacity + "%";
+      }
     }
     
     /**
@@ -3094,11 +3319,17 @@
       Core.setPref(Constants.TabGroups.PREF_COLLAPSE_ON_LAUNCH, get("zs-tg-collapse").checked);
       Core.setPref(Constants.TabGroups.PREF_THUMBNAILS, get("zs-tg-thumbnails").checked);
       Core.setPref(Constants.TabGroups.PREF_SHOW_CHEVRON, get("zs-tg-chevron").checked);
+      if (get("zs-tg-opacity")) {
+        Core.setPref(Constants.TabGroups.PREF_LABEL_OPACITY, parseInt(get("zs-tg-opacity").value));
+      }
       
       this.close();
       // Apply immediate UI updates
       if (window.Zentral?.Apps) window.Zentral.Apps.renderGrid();
-      if (window.Zentral?.TabGroups) window.Zentral.TabGroups.applyChevronPref();
+      if (window.Zentral?.TabGroups) {
+        window.Zentral.TabGroups.applyChevronPref();
+        window.Zentral.TabGroups.applyLabelOpacityPref();
+      }
     }
     
     /* --------------------------------------------------------------------------
@@ -3341,6 +3572,48 @@
           transform: translateX(16px);
         }
 
+        .zs-range-container {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          width: 180px;
+        }
+
+        .zs-range-slider {
+          flex: 1;
+          appearance: none;
+          -webkit-appearance: none;
+          height: 6px;
+          border-radius: 3px;
+          background: color-mix(in srgb, currentColor 18%, transparent);
+          outline: none;
+          cursor: pointer;
+        }
+
+        .zs-range-slider::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          appearance: none;
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: var(--zen-primary-color, #70a0ff);
+          box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+          cursor: pointer;
+          transition: transform 0.15s ease;
+        }
+
+        .zs-range-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.15);
+        }
+
+        .zs-range-value {
+          font-size: 12px;
+          font-weight: 600;
+          width: 40px;
+          text-align: right;
+          opacity: 0.85;
+        }
+
         .zs-reset-btn {
           padding: 5px 12px;
           font-size: 11px;
@@ -3545,6 +3818,17 @@
               </label>
             </div>
 
+            <div class="zs-row">
+              <div class="zs-label-container">
+                <span class="zs-label">Group Labels Opacity</span>
+                <span class="zs-sublabel">Adjust label pill transparency (10% - 100%)</span>
+              </div>
+              <div class="zs-range-container">
+                <input type="range" id="zs-tg-opacity" class="zs-range-slider" min="10" max="100" step="5" />
+                <span id="zs-tg-opacity-val" class="zs-range-value">85%</span>
+              </div>
+            </div>
+
             <button id="zs-tg-reset" class="zs-reset-btn">Reset Tab Groups Defaults</button>
           </div>
         </div>
@@ -3589,7 +3873,22 @@
         get("zs-tg-collapse").checked = false;
         get("zs-tg-thumbnails").checked = true;
         get("zs-tg-chevron").checked = true;
+        get("zs-tg-opacity").value = 85;
+        get("zs-tg-opacity-val").textContent = "85%";
+        document.documentElement.style.setProperty("--zentral-tabgroup-label-opacity", "0.85");
+        document.documentElement.setAttribute("zentral-label-opacity-below-85", "false");
       });
+
+      const opacityInput = this.modal.querySelector("#zs-tg-opacity");
+      const opacityVal = this.modal.querySelector("#zs-tg-opacity-val");
+      if (opacityInput && opacityVal) {
+        opacityInput.addEventListener("input", (e) => {
+          const val = parseInt(e.target.value);
+          opacityVal.textContent = val + "%";
+          document.documentElement.style.setProperty("--zentral-tabgroup-label-opacity", (val / 100).toFixed(2));
+          document.documentElement.setAttribute("zentral-label-opacity-below-85", val < 85 ? "true" : "false");
+        });
+      }
       
       this.populate();
     }
@@ -3617,7 +3916,7 @@
     TabGroups,
     Settings,
     Init: () => {
-      console.log("[Zentral] Booting Master Script (v1.1.0)...");
+      console.log("[Zentral] Booting Master Script (v1.5.0)...");
       Apps.init();
       TabGroups.init();
       Settings.init();
