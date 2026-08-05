@@ -143,7 +143,8 @@ $configPrefsContent = @(
     'pref("general.config.filename", "config.js");',
     'pref("general.config.obscure_value", 0);',
     'pref("general.config.sandbox_enabled", false);',
-    'pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
+    'pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);',
+    'pref("browser.tabs.groups.enabled", true);'
 ) -join "`r`n"
 
 # Write UTF-8 WITHOUT BOM (essential for Firefox autoconfig parser)
@@ -197,16 +198,22 @@ foreach ($targetProfile in $targetProfiles) {
         Copy-Item -Path $zentralCss -Destination "$profileChrome\userChrome.css" -Force
     }
 
-    # Enable legacy userChrome.css stylesheet customization in profile user.js
+    # Enable userChrome.css and tab groups in profile user.js
     $userJsPath = Join-Path $targetProfile "user.js"
-    $userJsPref = 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
+    $userJsPrefs = @(
+        'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);',
+        'user_pref("browser.tabs.groups.enabled", true);'
+    )
     if (Test-Path $userJsPath) {
         $userJsContent = Get-Content $userJsPath -Raw
-        if ($userJsContent -notmatch "toolkit\.legacyUserProfileCustomizations\.stylesheets") {
-            Add-Content -Path $userJsPath -Value "`r`n$userJsPref"
+        foreach ($pref in $userJsPrefs) {
+            $key = ($pref -replace 'user_pref\("([^"]+)".*', '$1')
+            if ($userJsContent -notmatch [regex]::Escape($key)) {
+                Add-Content -Path $userJsPath -Value "`r`n$pref"
+            }
         }
     } else {
-        [System.IO.File]::WriteAllText($userJsPath, "$userJsPref`r`n", $utf8NoBom)
+        [System.IO.File]::WriteAllText($userJsPath, ($userJsPrefs -join "`r`n") + "`r`n", $utf8NoBom)
     }
 }
 Write-Host "  -> Installed Zentral.uc.js, userChrome.css, user.js, and loader engine to all profiles." -ForegroundColor Gray

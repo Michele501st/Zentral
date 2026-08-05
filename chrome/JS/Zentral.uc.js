@@ -1976,8 +1976,23 @@
       if (group.shadowRoot && !group.shadowRoot.querySelector('.zentral-shadow-style')) {
         const style = document.createElement('style');
         style.className = 'zentral-shadow-style';
-        style.textContent = `* { border-radius: 6px !important; }`;
+        style.textContent = `
+          * { border-radius: 6px !important; }
+          .tab-group-icon::before { display: none !important; content: none !important; }
+          .tab-group-icon > image,
+          .tab-group-icon > img,
+          .tab-group-icon > svg:not(.zentral-chevron) { display: none !important; }
+        `;
         group.shadowRoot.appendChild(style);
+      }
+      // Also clear any native children inside .tab-group-icon that are not our custom chevron
+      const iconEl = group.querySelector('.tab-group-icon');
+      if (iconEl) {
+        Array.from(iconEl.children).forEach(child => {
+          if (!child.classList.contains('zentral-chevron')) {
+            child.style.setProperty('display', 'none', 'important');
+          }
+        });
       }
       const labelContainer = group.querySelector(".tab-group-label-container");
       if (labelContainer) {
@@ -1990,11 +2005,11 @@
          * whenever Zen's own JS rewrites the element's style attribute.
          */
         const enforceRestingStyles = () => {
-          labelContainer.style.setProperty("border-radius", "10px", "important");
+          labelContainer.style.setProperty("border-radius", "12px", "important");
           labelContainer.style.setProperty("aspect-ratio", "auto", "important");
-          labelContainer.style.setProperty("align-self", "flex-start", "important");
-          labelContainer.style.setProperty("width", "max-content", "important");
-          labelContainer.style.setProperty("min-width", "max-content", "important");
+          labelContainer.style.setProperty("align-self", "stretch", "important");
+          labelContainer.style.setProperty("width", "100%", "important");
+          labelContainer.style.setProperty("min-width", "100%", "important");
           labelContainer.style.setProperty("max-width", "100%", "important");
           labelContainer.style.setProperty("height", "28px", "important");
           labelContainer.style.setProperty("min-height", "28px", "important");
@@ -2010,9 +2025,10 @@
 
         const innerLabel = labelContainer.querySelector(".tab-group-label");
         if (innerLabel) {
-          innerLabel.style.setProperty("border-radius", "10px", "important");
+          innerLabel.style.setProperty("border-radius", "12px", "important");
           innerLabel.style.setProperty("width", "auto", "important");
-          innerLabel.style.setProperty("overflow", "visible", "important");
+          innerLabel.style.setProperty("overflow", "hidden", "important");
+          innerLabel.style.setProperty("text-overflow", "ellipsis", "important");
         }
 
         // Guard against MutationObserver re-entrancy
@@ -2025,49 +2041,7 @@
         });
         styleWatcher.observe(labelContainer, { attributes: true, attributeFilter: ["style"] });
 
-        // Wire hover: expand to full-width on mouseenter, collapse on mouseleave
-        labelContainer.addEventListener("mouseenter", () => {
-          _isHovered = true;
-          labelContainer.style.setProperty("align-self", "stretch", "important");
-          labelContainer.style.setProperty("width", "100%", "important");
-          labelContainer.style.setProperty("min-width", "100%", "important");
-        });
-        labelContainer.addEventListener("mouseleave", () => {
-          _isHovered = false;
-          labelContainer.style.setProperty("align-self", "flex-start", "important");
-          labelContainer.style.setProperty("width", "max-content", "important");
-          labelContainer.style.setProperty("min-width", "max-content", "important");
-        });
-        // Also expand when hovering over any tab inside the group
-        const tabsObserved = new WeakSet();
-        const collapseTimer = { id: null };
-        const expandLabel = () => {
-          if (collapseTimer.id) { clearTimeout(collapseTimer.id); collapseTimer.id = null; }
-          _isHovered = true;
-          labelContainer.style.setProperty("align-self", "stretch", "important");
-          labelContainer.style.setProperty("width", "100%", "important");
-          labelContainer.style.setProperty("min-width", "100%", "important");
-        };
-        const collapseLabel = () => {
-          collapseTimer.id = setTimeout(() => {
-            _isHovered = false;
-            labelContainer.style.setProperty("align-self", "flex-start", "important");
-            labelContainer.style.setProperty("width", "max-content", "important");
-            labelContainer.style.setProperty("min-width", "max-content", "important");
-            collapseTimer.id = null;
-          }, 80);
-        };
-        // Observe tabs added to the group and attach hover listeners
-        const wireTabHover = (tab) => {
-          if (tabsObserved.has(tab)) return;
-          tabsObserved.add(tab);
-          tab.addEventListener("mouseenter", expandLabel);
-          tab.addEventListener("mouseleave", collapseLabel);
-        };
-        if (group.tabs) Array.from(group.tabs).forEach(wireTabHover);
-        new MutationObserver(() => {
-          if (group.tabs) Array.from(group.tabs).forEach(wireTabHover);
-        }).observe(group, { childList: true, subtree: true });
+        // Labels are always full-width — no hover expand/collapse needed.
         
         let hoverTimer = null;
         labelContainer.addEventListener("mouseenter", () => {

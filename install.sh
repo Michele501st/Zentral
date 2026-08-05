@@ -59,15 +59,22 @@ if [ -f "$SCRIPT_DIR/chrome/userChrome.css" ]; then
     cp -f "$SCRIPT_DIR/chrome/userChrome.css" "$ZEN_PROFILE_DIR/chrome/userChrome.css"
 fi
 
-# Ensure userChrome.css is enabled in user.js
+# Ensure userChrome.css and tab groups are enabled in user.js
 USER_JS="$ZEN_PROFILE_DIR/user.js"
-PREF_LINE='user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
+declare -A PREFS_TO_SET=(
+    ["toolkit.legacyUserProfileCustomizations.stylesheets"]='user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'
+    ["browser.tabs.groups.enabled"]='user_pref("browser.tabs.groups.enabled", true);'
+)
 if [ -f "$USER_JS" ]; then
-    if ! grep -q "toolkit.legacyUserProfileCustomizations.stylesheets" "$USER_JS"; then
-        echo "$PREF_LINE" >> "$USER_JS"
-    fi
+    for key in "${!PREFS_TO_SET[@]}"; do
+        if ! grep -q "$key" "$USER_JS"; then
+            echo "${PREFS_TO_SET[$key]}" >> "$USER_JS"
+        fi
+    done
 else
-    echo "$PREF_LINE" > "$USER_JS"
+    for key in "${!PREFS_TO_SET[@]}"; do
+        echo "${PREFS_TO_SET[$key]}" >> "$USER_JS"
+    done
 fi
 
 echo ""
