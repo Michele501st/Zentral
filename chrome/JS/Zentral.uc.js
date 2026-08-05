@@ -677,6 +677,8 @@
 
         let isDraggingTile = false;
         let clickTimer = null;
+        let startX = 0;
+        let startY = 0;
 
         const togglePanel = () => {
           if (this.#state.activeAppId === app.id) {
@@ -686,27 +688,47 @@
           }
         };
 
+        const cancelClickTimer = () => {
+          if (clickTimer) {
+            clearTimeout(clickTimer);
+            clickTimer = null;
+          }
+        };
+
         btn.addEventListener("mousedown", (e) => {
           if (e.button !== 0) return;
           isDraggingTile = false;
+          startX = e.clientX;
+          startY = e.clientY;
           
-          // Fallback timer for Collapsed Sidebar (where mouseup gets swallowed)
-          clickTimer = setTimeout(() => {
-            clickTimer = null;
-            if (!isDraggingTile) togglePanel();
-          }, 200);
+          cancelClickTimer();
+          if (this.isCollapsedSidebar()) {
+            clickTimer = setTimeout(() => {
+              clickTimer = null;
+              if (!isDraggingTile) togglePanel();
+            }, 400);
+          }
+        });
+
+        btn.addEventListener("mousemove", (e) => {
+          if (e.buttons === 1) {
+            const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
+            if (dist > 4) {
+              isDraggingTile = true;
+              cancelClickTimer();
+            }
+          }
         });
 
         btn.addEventListener("mouseup", (e) => {
           if (e.button !== 0) return;
-          if (isDraggingTile) return;
-          
-          // If mouseup wasn't swallowed, execute immediately and cancel fallback
-          if (clickTimer) {
-            clearTimeout(clickTimer);
-            clickTimer = null;
-            togglePanel();
+          if (isDraggingTile) {
+            cancelClickTimer();
+            return;
           }
+          
+          cancelClickTimer();
+          togglePanel();
         });
         
         btn.addEventListener("click", (e) => {
