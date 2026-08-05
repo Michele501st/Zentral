@@ -93,12 +93,80 @@
   transition: color 0.15s ease !important;
 }
 
-/* Hide group icons / chevrons entirely */
-#tabbrowser-tabs tab-group .tab-group-icon,
-#tabbrowser-tabs tab-group[collapsed] .tab-group-icon,
+/* Chevron icon (matching text color & clean background/border in open & collapsed states) */
+#tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-icon,
+#tabbrowser-tabs tab-group[collapsed] > .tab-group-label-container .tab-group-icon,
 tab-group .tab-group-icon,
 tab-group[collapsed] .tab-group-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin-right: 6px !important;
+  margin-left: 0 !important;
+  flex-shrink: 0 !important;
+  order: 1 !important;
+  color: var(--zentral-tabgroup-contrast-color, inherit) !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  text-decoration: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+}
+
+#tabbrowser-tabs tab-group .tab-group-icon::before,
+#tabbrowser-tabs tab-group[collapsed] .tab-group-icon::before,
+tab-group .tab-group-icon::before,
+tab-group[collapsed] .tab-group-icon::before {
   display: none !important;
+  content: none !important;
+  border: none !important;
+  outline: none !important;
+  background: none !important;
+}
+
+#tabbrowser-tabs tab-group .tab-group-icon image,
+#tabbrowser-tabs tab-group .tab-group-icon img,
+#tabbrowser-tabs tab-group .tab-group-icon svg,
+#tabbrowser-tabs tab-group .tab-group-icon label,
+#tabbrowser-tabs tab-group .tab-group-icon span,
+#tabbrowser-tabs tab-group .tab-group-icon > *,
+#tabbrowser-tabs tab-group[collapsed] .tab-group-icon > * {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+}
+
+tab-group .group-marker {
+  display: none !important;
+}
+
+tab-group .tab-group-icon::after {
+  content: "" !important;
+  display: block !important;
+  width: 10px !important;
+  height: 10px !important;
+  background-color: currentColor !important;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  -webkit-mask-size: contain !important;
+  mask-size: contain !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+  -webkit-mask-position: center !important;
+  mask-position: center !important;
+  transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1) !important;
+  transform: rotate(0deg) !important;
+}
+
+tab-group[collapsed] .tab-group-icon::after {
+  transform: rotate(-90deg) !important;
 }
 
 /* Hierarchy & Nested Groups */
