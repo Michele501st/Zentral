@@ -172,8 +172,14 @@ foreach ($uf in $utilsFiles) {
     if ($uPath) {
         $downloadedUtils[$uf] = $uPath
     }
+$jsFilesToFetch = @("Zentral.uc.js", "zen_tab_peek_logger.uc.js")
+$downloadedJS = @{}
+foreach ($js in $jsFilesToFetch) {
+    $jPath = Fetch-Asset "chrome\JS\$js"
+    if ($jPath) {
+        $downloadedJS[$js] = $jPath
+    }
 }
-$zentralScript = Fetch-Asset "chrome\JS\Zentral.uc.js"
 $zentralCss = Fetch-Asset "chrome\userChrome.css"
 
 foreach ($targetProfile in $targetProfiles) {
@@ -191,14 +197,17 @@ foreach ($targetProfile in $targetProfiles) {
         }
     }
     
-    $jsSourceDir = Join-Path $PSScriptRoot "chrome\JS"
-    if (Test-Path $jsSourceDir) {
-        Get-ChildItem -Path $jsSourceDir -Filter "*.uc.js" | ForEach-Object {
+    foreach ($js in $downloadedJS.Keys) {
+        Copy-Item -Path $downloadedJS[$js] -Destination "$profileJS\$js" -Force
+    }
+
+    # Also copy extra local .uc.js files if running from a local git repository
+    if ($scriptRoot -and (Test-Path -Path (Join-Path $scriptRoot "chrome\JS"))) {
+        Get-ChildItem -Path (Join-Path $scriptRoot "chrome\JS") -Filter "*.uc.js" -ErrorAction SilentlyContinue | ForEach-Object {
             Copy-Item -Path $_.FullName -Destination "$profileJS\$($_.Name)" -Force
         }
-    } elseif ($zentralScript) {
-        Copy-Item -Path $zentralScript -Destination "$profileJS\Zentral.uc.js" -Force
     }
+
     if ($zentralCss) {
         Copy-Item -Path $zentralCss -Destination "$profileChrome\userChrome.css" -Force
     }
