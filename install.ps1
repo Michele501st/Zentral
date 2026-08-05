@@ -172,6 +172,7 @@ foreach ($uf in $utilsFiles) {
     if ($uPath) {
         $downloadedUtils[$uf] = $uPath
     }
+}
 $jsFilesToFetch = @("Zentral.uc.js", "zen_tab_peek_logger.uc.js")
 $downloadedJS = @{}
 foreach ($js in $jsFilesToFetch) {
