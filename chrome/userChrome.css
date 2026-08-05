@@ -93,8 +93,9 @@
   transition: color 0.15s ease !important;
 }
 
-/* Chevron icon (matching text color) */
-#tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-icon {
+/* Chevron icon (matching text color & clean background/border) */
+#tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-icon,
+tab-group .tab-group-icon {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -105,6 +106,20 @@
   flex-shrink: 0 !important;
   order: 1 !important;
   color: var(--zentral-tabgroup-contrast-color, inherit) !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-image: none !important;
+}
+
+tab-group .tab-group-icon::before {
+  display: none !important;
+  content: none !important;
+}
+
+tab-group .tab-group-icon > * {
+  display: none !important;
 }
 
 #tab-label-input {
@@ -197,6 +212,19 @@ tab-group:not([split-view-group])[collapsed] .tab-group-container tab:not([selec
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   pointer-events: none !important;
+}
+
+/* Hide tree guide lines and native pseudo-elements when a tab group is collapsed/closed */
+tab-group[collapsed] .tab-group-container::after,
+tab-group[collapsed] .tab-group-container::before,
+tab-group[collapsed]::before,
+tab-group[collapsed]::after,
+tab-group[collapsed] > .tab-group-label-container::before,
+tab-group[collapsed] > .tab-group-label-container::after,
+tab-group:not([open]) .tab-group-container::after,
+tab-group:not([open]) .tab-group-container::before {
+  display: none !important;
+  content: none !important;
 }
 
 /* Collapsed Sidebar Mode Styling */
