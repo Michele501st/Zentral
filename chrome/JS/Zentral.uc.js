@@ -1646,7 +1646,7 @@
     injectStyles() {
       const css = `
 
-        /* Zentral Tooltip Styling */
+        /* Zentral Tooltip Styling (Matched to native Zen tab previews) */
         #zentral-tabgroup-tooltip {
           --panel-background: transparent !important;
           --panel-border-color: transparent !important;
@@ -1660,26 +1660,55 @@
           box-shadow: none !important;
         }
         #zentral-tabgroup-tooltip-container {
-          background: var(--tabpanels-background-color, var(--in-content-page-background, #16161a)) !important;
-          color: var(--in-content-page-color, #fbfbfe) !important;
-          border: 1px solid color-mix(in srgb, currentColor 12%, rgba(255, 255, 255, 0.08)) !important;
-          border-radius: 10px !important;
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45) !important;
-          padding: 8px 10px !important;
-          gap: 5px !important;
+          background: var(--zen-colors-tertiary, var(--arrowpanel-background, var(--tabpanels-background-color, #1e1e22))) !important;
+          color: var(--zen-colors-text, var(--arrowpanel-color, var(--in-content-page-color, #fbfbfe))) !important;
+          border: 1px solid var(--zen-colors-border, var(--arrowpanel-border-color, color-mix(in srgb, currentColor 12%, rgba(255, 255, 255, 0.08)))) !important;
+          border-radius: 12px !important;
+          box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px color-mix(in srgb, currentColor 8%, transparent) !important;
+          padding: 6px !important;
+          gap: 2px !important;
+          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
           font-size: 13px !important;
-          line-height: 1.5 !important;
-          max-height: 215px !important;
-          backdrop-filter: blur(16px) !important;
+          line-height: 1.4 !important;
+          max-height: 320px !important;
+          backdrop-filter: blur(20px) saturate(140%) !important;
+          -webkit-backdrop-filter: blur(20px) saturate(140%) !important;
         }
         .zentral-tooltip-row {
-          padding: 4px 8px !important;
-          border-radius: 6px !important;
+          padding: 6px 10px !important;
+          border-radius: 8px !important;
           cursor: pointer !important;
-          transition: background-color 0.12s ease !important;
+          transition: background-color 0.15s ease !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 10px !important;
+          max-width: 320px !important;
         }
         .zentral-tooltip-row:hover {
-          background-color: rgba(255, 255, 255, 0.12) !important;
+          background-color: color-mix(in srgb, currentColor 10%, transparent) !important;
+        }
+        .zentral-tooltip-text-col {
+          display: flex !important;
+          flex-direction: column !important;
+          min-width: 0 !important;
+          flex: 1 !important;
+        }
+        .zentral-tooltip-title {
+          font-size: 12.5px !important;
+          font-weight: 500 !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          color: inherit !important;
+        }
+        .zentral-tooltip-domain {
+          font-size: 10.5px !important;
+          opacity: 0.65 !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+          margin-top: 1px !important;
+          color: inherit !important;
         }
 
         /* Zentral Color Picker Panel Styling */
@@ -2097,10 +2126,6 @@
                 tabs.forEach(tab => {
                   const row = document.createElement("div");
                   row.className = "zentral-tooltip-row";
-                  row.style.display = "flex";
-                  row.style.alignItems = "center";
-                  row.style.gap = "8px";
-                  row.style.maxWidth = "320px";
                   
                   row.addEventListener("click", (e) => {
                     e.preventDefault();
@@ -2113,6 +2138,7 @@
                   icon.src = imgSrc;
                   icon.style.width = "16px";
                   icon.style.height = "16px";
+                  icon.style.borderRadius = "3px";
                   icon.style.flexShrink = "0";
                   
                   let cleanTitle = tab.label || "New Tab";
@@ -2124,15 +2150,31 @@
                   } while (cleanTitle !== prev);
                   cleanTitle = cleanTitle.trim() || (tab.label || "New Tab");
 
-                  const text = document.createElement("div");
-                  text.textContent = cleanTitle;
-                  text.style.whiteSpace = "nowrap";
-                  text.style.overflow = "hidden";
-                  text.style.textOverflow = "ellipsis";
-                  text.style.color = "var(--text-color, inherit)";
+                  let domain = "";
+                  try {
+                    const uri = tab.linkedBrowser?.currentURI;
+                    if (uri && uri.host) {
+                      domain = uri.host.replace(/^www\./, "");
+                    }
+                  } catch (_) {}
+
+                  const textCol = document.createElement("div");
+                  textCol.className = "zentral-tooltip-text-col";
+
+                  const titleEl = document.createElement("div");
+                  titleEl.className = "zentral-tooltip-title";
+                  titleEl.textContent = cleanTitle;
+                  textCol.appendChild(titleEl);
+
+                  if (domain) {
+                    const domainEl = document.createElement("div");
+                    domainEl.className = "zentral-tooltip-domain";
+                    domainEl.textContent = domain;
+                    textCol.appendChild(domainEl);
+                  }
                   
                   row.appendChild(icon);
-                  row.appendChild(text);
+                  row.appendChild(textCol);
                   container.appendChild(row);
                 });
               }
