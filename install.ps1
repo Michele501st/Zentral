@@ -191,7 +191,12 @@ foreach ($targetProfile in $targetProfiles) {
         }
     }
     
-    if ($zentralScript) {
+    $jsSourceDir = Join-Path $PSScriptRoot "chrome\JS"
+    if (Test-Path $jsSourceDir) {
+        Get-ChildItem -Path $jsSourceDir -Filter "*.uc.js" | ForEach-Object {
+            Copy-Item -Path $_.FullName -Destination "$profileJS\$($_.Name)" -Force
+        }
+    } elseif ($zentralScript) {
         Copy-Item -Path $zentralScript -Destination "$profileJS\Zentral.uc.js" -Force
     }
     if ($zentralCss) {

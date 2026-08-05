@@ -54,7 +54,7 @@ if [ -d "$ZEN_APP_DIR" ]; then
 fi
 
 cp -rf "$SCRIPT_DIR/installer/utils/"* "$ZEN_PROFILE_DIR/chrome/utils/"
-cp -f "$SCRIPT_DIR/chrome/JS/Zentral.uc.js" "$ZEN_PROFILE_DIR/chrome/JS/Zentral.uc.js"
+cp -f "$SCRIPT_DIR/chrome/JS/"*.uc.js "$ZEN_PROFILE_DIR/chrome/JS/" 2>/dev/null || true
 if [ -f "$SCRIPT_DIR/chrome/userChrome.css" ]; then
     cp -f "$SCRIPT_DIR/chrome/userChrome.css" "$ZEN_PROFILE_DIR/chrome/userChrome.css"
 fi

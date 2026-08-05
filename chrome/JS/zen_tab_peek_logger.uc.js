@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Zentral — Unified Diagnostic Logger
-// @description  Comprehensive diagnostic logger capturing console events, DOM interactions, hit-test element inspection, and panel state.
+// @description  Comprehensive diagnostic logger capturing console events, DOM interactions, tab group label rendering diagnostics, hit-test element inspection, and panel state.
 // @author       Michele Pierini
-// @version      2.0.0
+// @version      2.1.0
 // @include      main
 // ==/UserScript==
 
@@ -54,6 +54,12 @@
       _debug(`[${tag}] ${msg}`);
       record("debug", tag, msg);
     },
+    inspectTabGroupLabels() {
+      const snapshot = captureTabGroupRenderingSnapshot();
+      _log(snapshot);
+      record("info", "Label-Inspector", snapshot);
+      return snapshot;
+    },
     get entries() { return [...ringBuffer]; },
     dump()   { ringBuffer.forEach(l => _log(l)); },
     export() { exportLog(); },
@@ -90,7 +96,7 @@
 
   // -------------------------------------------------------------------------
   // Automatic DOM Interaction & Hit-Test Logger
-  // Captures clicks, mousedown, mouseup on relevant UI components
+  // Captures clicks, mousedown, mouseup on relevant UI components & labels
   // -------------------------------------------------------------------------
   function formatElement(el) {
     if (!el) return "null";
@@ -136,8 +142,8 @@
     };
   }
 
-  // Intercept DOM interactions in capture phase
-  const INTERESTING_SELECTORS = ".zen-app-tile, #zen-apps-sidebar-grid, #zen-app-panel-root, #navigator-toolbox, #PersonalToolbar, #nav-bar, #browser";
+  // Intercept DOM interactions in capture phase (including tab groups & label components)
+  const INTERESTING_SELECTORS = "tab-group, .tab-group-label-container, .tab-group-label, .tab-group-icon, .zentral-group-initials, tab, #tabbrowser-tabs, .zen-app-tile, #zen-apps-sidebar-grid, #zen-app-panel-root, #navigator-toolbox, #PersonalToolbar, #nav-bar, #browser";
 
   window.addEventListener("mousedown", (e) => {
     if (e.target.closest && e.target.closest(INTERESTING_SELECTORS)) {
@@ -152,6 +158,122 @@
       ZenzeiLogger.log("DOM-Event", `click button=${e.button} at ${info.coords} | target=${info.target} | topAtPoint=${info.topAtPoint}`);
     }
   }, true);
+
+  // -------------------------------------------------------------------------
+  // Detailed Tab Group & Label Rendering Inspector
+  // -------------------------------------------------------------------------
+  function captureTabGroupRenderingSnapshot() {
+    const groups = document.querySelectorAll("tab-group");
+    if (!groups.length) return "No <tab-group> elements found in workspace DOM.";
+
+    const lines = [];
+    lines.push(`--- TAB GROUP LABEL & RENDERING DIAGNOSTIC BREAKDOWN (${groups.length} groups found) ---`);
+
+    groups.forEach((group, index) => {
+      const groupLabelText = group.label || group.getAttribute("label") || "(no title)";
+      const isCollapsed = group.hasAttribute("collapsed");
+      const isSplitView = group.hasAttribute("split-view-group");
+      
+      lines.push(`\n[Group #${index + 1}] Label: "${groupLabelText}" | Collapsed: ${isCollapsed} | SplitView: ${isSplitView}`);
+
+      // 1. Container (.tab-group-label-container)
+      const container = group.querySelector(".tab-group-label-container");
+      if (container) {
+        const cs = window.getComputedStyle(container);
+        const rect = container.getBoundingClientRect();
+        lines.push(`  ├─ .tab-group-label-container:`);
+        lines.push(`  │    Size & Rect: ${rect.width.toFixed(1)}px x ${rect.height.toFixed(1)}px (at left:${rect.left.toFixed(1)}, top:${rect.top.toFixed(1)})`);
+        lines.push(`  │    Display/Layout: display=${cs.display}, flexDir=${cs.flexDirection}, alignSelf=${cs.alignSelf}, width=${cs.width}, height=${cs.height}`);
+        lines.push(`  │    Background: ${cs.backgroundColor} | image=${cs.backgroundImage !== 'none' ? 'present' : 'none'}`);
+        lines.push(`  │    Border & Radius: border=${cs.border}, borderRadius=${cs.borderRadius}`);
+        lines.push(`  │    Box Shadow: ${cs.boxShadow}`);
+      } else {
+        lines.push(`  ├─ .tab-group-label-container: NOT FOUND`);
+      }
+
+      // 2. Text Element (.tab-group-label)
+      const labelTextEl = group.querySelector(".tab-group-label");
+      if (labelTextEl) {
+        const cs = window.getComputedStyle(labelTextEl);
+        const rect = labelTextEl.getBoundingClientRect();
+        lines.push(`  ├─ .tab-group-label:`);
+        lines.push(`  │    Content: "${labelTextEl.textContent}"`);
+        lines.push(`  │    Size & Rect: ${rect.width.toFixed(1)}px x ${rect.height.toFixed(1)}px`);
+        lines.push(`  │    Typography: color=${cs.color}, fontSize=${cs.fontSize}, fontWeight=${cs.fontWeight}`);
+        lines.push(`  │    Overflow/Width: width=${cs.width}, overflow=${cs.overflow}, textOverflow=${cs.textOverflow}, display=${cs.display}`);
+      } else {
+        lines.push(`  ├─ .tab-group-label: NOT FOUND`);
+      }
+
+      // 3. Icon/Chevron Container (.tab-group-icon)
+      const iconEl = group.querySelector(".tab-group-icon");
+      if (iconEl) {
+        const cs = window.getComputedStyle(iconEl);
+        const rect = iconEl.getBoundingClientRect();
+        const children = Array.from(iconEl.children).map(c => `${c.tagName.toLowerCase()}${c.className ? '.' + c.className.trim().split(/\s+/).join('.') : ''}`);
+        
+        let beforeCs = {}, afterCs = {};
+        try {
+          beforeCs = window.getComputedStyle(iconEl, "::before");
+          afterCs  = window.getComputedStyle(iconEl, "::after");
+        } catch (_) {}
+        
+        lines.push(`  ├─ .tab-group-icon:`);
+        lines.push(`  │    Size & Rect: ${rect.width.toFixed(1)}px x ${rect.height.toFixed(1)}px`);
+        lines.push(`  │    Display/Color: display=${cs.display}, color=${cs.color}, bg=${cs.backgroundColor}`);
+        lines.push(`  │    Children (${children.length}): [${children.join(", ")}]`);
+        lines.push(`  │    ::before: display=${beforeCs.display || 'n/a'}, content=${beforeCs.content || 'n/a'}`);
+        lines.push(`  │    ::after: display=${afterCs.display || 'n/a'}, transform=${afterCs.transform || 'n/a'}, maskImage=${afterCs.maskImage && afterCs.maskImage !== 'none' ? 'present' : 'none'}`);
+      } else {
+        lines.push(`  ├─ .tab-group-icon: NOT FOUND`);
+      }
+
+      // 4. Initials Badge (.zentral-group-initials)
+      const initialsEl = group.querySelector(".zentral-group-initials");
+      if (initialsEl) {
+        const cs = window.getComputedStyle(initialsEl);
+        lines.push(`  ├─ .zentral-group-initials: display=${cs.display}, text="${initialsEl.textContent}"`);
+      }
+
+      // 5. ShadowRoot info
+      if (group.shadowRoot) {
+        const hasZentralStyle = !!group.shadowRoot.querySelector(".zentral-shadow-style");
+        lines.push(`  └─ ShadowRoot: present (hasZentralShadowStyle: ${hasZentralStyle})`);
+      } else {
+        lines.push(`  └─ ShadowRoot: none`);
+      }
+    });
+
+    return lines.join("\n");
+  }
+
+  // Real-time Tab Group Mutation Observer
+  const tabGroupObserver = new MutationObserver((mutations) => {
+    for (const m of mutations) {
+      if (m.target.tagName?.toUpperCase() === "TAB-GROUP") {
+        const group = m.target;
+        const label = group.label || group.getAttribute("label") || "(no title)";
+        const collapsed = group.hasAttribute("collapsed");
+        ZenzeiLogger.log("Group-Mutation", `Group "${label}" attribute "${m.attributeName}" mutated (collapsed: ${collapsed})`);
+      }
+    }
+  });
+
+  function startGroupObserver() {
+    const tabContainer = document.getElementById("tabbrowser-tabs") || document.body;
+    tabGroupObserver.observe(tabContainer, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["collapsed", "label", "style", "class"]
+    });
+  }
+
+  if (document.readyState === "complete") {
+    startGroupObserver();
+  } else {
+    window.addEventListener("DOMContentLoaded", startGroupObserver);
+  }
 
   // -------------------------------------------------------------------------
   // Log Exporter (Alt+L)
@@ -190,6 +312,15 @@
       cos.writeString(`Document Title: ${document.title}\n`);
       cos.writeString(`${"=".repeat(80)}\n\n`);
 
+      cos.writeString(`\n${"=".repeat(80)}\n`);
+      cos.writeString(`TAB GROUP LABEL & RENDERING DIAGNOSTIC SNAPSHOT\n`);
+      cos.writeString(`${"=".repeat(80)}\n`);
+      cos.writeString(captureTabGroupRenderingSnapshot() + "\n\n");
+
+      cos.writeString(`${"=".repeat(80)}\n`);
+      cos.writeString(`EVENT LOG TRACE\n`);
+      cos.writeString(`${"=".repeat(80)}\n\n`);
+
       const content = ringBuffer.length
         ? ringBuffer.join("\n")
         : "[No diagnostic events recorded yet]";
@@ -206,6 +337,6 @@
     }
   }
 
-  ZenzeiLogger.log("ZenzeiLogger", "Diagnostic Logger v2.0 initialized. Ready — press Alt+L to save logs.");
+  ZenzeiLogger.log("ZenzeiLogger", "Diagnostic Logger v2.1 initialized. Ready (capturing labels, icons & DOM rendering metrics) — press Alt+L to save logs.");
 
 })();

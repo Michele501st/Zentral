@@ -1991,9 +1991,9 @@
         `;
         group.shadowRoot.appendChild(style);
       }
+      // Also clear any native children inside .tab-group-icon that are not our custom chevron
       const iconEl = group.querySelector('.tab-group-icon');
       if (iconEl) {
-        iconEl.style.setProperty('display', 'inline-flex', 'important');
         Array.from(iconEl.children).forEach(child => {
           if (!child.classList.contains('zentral-chevron')) {
             child.style.setProperty('display', 'none', 'important');
