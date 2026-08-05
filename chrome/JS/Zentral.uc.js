@@ -1978,7 +1978,14 @@
         style.className = 'zentral-shadow-style';
         style.textContent = `
           * { border-radius: 6px !important; outline: none !important; }
-          .tab-group-icon { display: none !important; }
+          .tab-group-icon, .tab-group-icon * { border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important; }
+          .tab-group-icon::before { display: none !important; content: none !important; }
+          .tab-group-icon > image,
+          .tab-group-icon > img,
+          .tab-group-icon > svg:not(.zentral-chevron) { display: none !important; visibility: hidden !important; }
+          :host([collapsed]) .tab-group-icon,
+          :host([collapsed]) .tab-group-icon * { border: none !important; outline: none !important; box-shadow: none !important; background: transparent !important; }
+          :host([collapsed]) .tab-group-icon::before { display: none !important; content: none !important; }
           :host([collapsed]) .tab-group-container::after,
           :host([collapsed]) .tab-group-container::before { display: none !important; content: none !important; }
         `;
@@ -1986,7 +1993,18 @@
       }
       const iconEl = group.querySelector('.tab-group-icon');
       if (iconEl) {
-        iconEl.style.setProperty('display', 'none', 'important');
+        iconEl.style.setProperty('display', 'inline-flex', 'important');
+        Array.from(iconEl.children).forEach(child => {
+          if (!child.classList.contains('zentral-chevron')) {
+            child.style.setProperty('display', 'none', 'important');
+            child.style.setProperty('visibility', 'hidden', 'important');
+          }
+        });
+        iconEl.style.setProperty('border', 'none', 'important');
+        iconEl.style.setProperty('outline', 'none', 'important');
+        iconEl.style.setProperty('box-shadow', 'none', 'important');
+        iconEl.style.setProperty('background', 'transparent', 'important');
+        iconEl.style.setProperty('background-image', 'none', 'important');
       }
       const labelContainer = group.querySelector(".tab-group-label-container");
       if (labelContainer) {
