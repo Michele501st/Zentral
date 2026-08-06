@@ -1,4 +1,5 @@
-<img width="1919" height="1039" alt="Screenshot 2026-08-05 222553" src="https://github.com/user-attachments/assets/75325a03-a7a9-439b-8160-adf3b1c303a8" /><img width="1919" height="1040" alt="Screenshot 2026-08-05 222218" src="https://github.com/user-attachments/assets/472b0d52-8cdd-4476-850c-7ad2bb839a7a" /># 🌟 Zentral - Unified Apps Grid & Enhanced Tab Groups for Zen Browser
+# 🌟 Zentral - Unified Apps Grid & Enhanced Tab Groups for Zen Browser
+<img width="811" height="593" alt="Zentral-Demo" src="https://github.com/user-attachments/assets/4dec0e5f-5b7f-4558-90a1-04775ec7f658" />
 
 ![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)
 ![License](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-orange.svg)
@@ -17,6 +18,9 @@
 - **Interactive Controls**: Pin panels, expand to full width, or drag resize handles dynamically.
 - **Unread Notification Badges**: Automatic title tracking displays red badges or dot indicators for unread updates.
 - **Background Preloading**: Staggered background preloading for instant app access.
+<img width="1919" height="1040" alt="Zentral-Apps" src="https://github.com/user-attachments/assets/e2fe4049-b3f8-474c-b2bc-6c4f160770a3" />
+<img width="1919" height="1040" alt="Zentral-Collapsed" src="https://github.com/user-attachments/assets/af0720f3-e7e4-4e33-b12d-f67ccb8f6ec4" />
+
 
 ### 🎨 2. Enhanced Tab Groups
 - **Group Color Picker**: Integrated popup color wheel, preset swatches, RGB/Hex inputs, and a native screen eyedropper tool.
@@ -24,15 +28,15 @@
 - **Group Tooltips**: Hover over tab group pills to inspect instant tab lists.
 - **State Persistence**: Remembers group hierarchy, nesting, and collapsed states across browser restarts.
 - **Folder Conversion**: Seamlessly convert native Zen folders into Tab Groups and vice versa.
+<img width="1919" height="1038" alt="Zentral-Groups" src="https://github.com/user-attachments/assets/d73f06d3-fa73-4f9c-95aa-e7cd0accb407" />
 
 ### ⚙️ 3. Native Settings UI
 - Integrated preferences modal dialog accessible directly from the app context menu to customize animation speeds, row caps, apps per row, and group defaults on the fly.
+<img width="1919" height="1039" alt="Zentral-Settings_1" src="https://github.com/user-attachments/assets/819fdd4a-64af-4488-8400-e5d4c9468104" />
+<img width="1919" height="1040" alt="Zentral-Settings_2" src="https://github.com/user-attachments/assets/0e7b50d3-0578-4d0e-9641-28585e4ec3b6" />
 
-<img width="1919" height="1040" alt="Screenshot 2026-08-05 220109" src="https://github.com/user-attachments/assets/e91ebf5a-4324-4c15-aaf7-b8fefc175553" />
-<img width="1919" height="1038" alt="Screenshot 2026-08-05 220048" src="https://github.com/user-attachments/assets/a3bcb5c5-b81a-4889-ae5a-4d984a2a3db4" />
-<img width="1919" height="1040" alt="Screenshot 2026-08-05 222218" src="https://github.com/user-attachments/assets/0d02f7d9-9e88-434e-8aba-0ebb3de49817" />
-<img width="1919" height="1039" alt="Screenshot 2026-08-05 222553" src="https://github.com/user-attachments/assets/449fde64-1f3b-4a2b-b917-d8fc9e29fedf" />
-<img width="1919" height="1040" alt="Screenshot 2026-08-05 222524" src="https://github.com/user-attachments/assets/686de32c-6866-4823-b749-a029c45f40d3" />
+
+
 
 
 ---
