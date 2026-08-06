@@ -105,8 +105,11 @@
   transition: background-color 0.2s ease, border-radius 0.2s ease !important;
 }
 
-/* Nested Groups on Left Sidebar: 12px indentation from RIGHT inner edge */
-tab-group tab-group > .tab-group-label-container .zentral-tab-title-wrapper {
+/* Nested Groups on Left Sidebar: 12px indentation towards LEFT outer edge */
+tab-group tab-group > .tab-group-label-container .zentral-tab-title-wrapper,
+tab-group .tab-group-container tab-group > .tab-group-label-container .zentral-tab-title-wrapper,
+tab-group[depth] > .tab-group-label-container .zentral-tab-title-wrapper,
+tab-group[nesting-level] > .tab-group-label-container .zentral-tab-title-wrapper {
   margin-right: 12px !important;
   margin-left: auto !important;
 }
@@ -169,7 +172,13 @@ html[zen-right-side="true"] #tabbrowser-tabs tab-group > .tab-group-label-contai
 }
 
 html[zen-sidebar-right="true"] tab-group tab-group > .tab-group-label-container .zentral-tab-title-wrapper,
-html[zen-right-side="true"] tab-group tab-group > .tab-group-label-container .zentral-tab-title-wrapper {
+html[zen-sidebar-right="true"] tab-group .tab-group-container tab-group > .tab-group-label-container .zentral-tab-title-wrapper,
+html[zen-sidebar-right="true"] tab-group[depth] > .tab-group-label-container .zentral-tab-title-wrapper,
+html[zen-sidebar-right="true"] tab-group[nesting-level] > .tab-group-label-container .zentral-tab-title-wrapper,
+html[zen-right-side="true"] tab-group tab-group > .tab-group-label-container .zentral-tab-title-wrapper,
+html[zen-right-side="true"] tab-group .tab-group-container tab-group > .tab-group-label-container .zentral-tab-title-wrapper,
+html[zen-right-side="true"] tab-group[depth] > .tab-group-label-container .zentral-tab-title-wrapper,
+html[zen-right-side="true"] tab-group[nesting-level] > .tab-group-label-container .zentral-tab-title-wrapper {
   margin-left: 12px !important;
   margin-right: auto !important;
 }
@@ -377,9 +386,10 @@ html[zentral-show-chevron="false"] tab-group[collapsed] .tab-group-icon {
 }
 
 /* Hierarchy & Nested Groups (Outer-edge alignment) */
+/* Hierarchy & Nested Groups Indentation (Mirrored for Left vs Right Sidebar) */
 tab-group tab-group {
-  margin-left: 12px !important;
-  margin-right: 0 !important;
+  margin-right: 12px !important;
+  margin-left: 0 !important;
   position: relative !important;
   width: calc(100% - 12px) !important;
 }
@@ -387,8 +397,8 @@ tab-group tab-group {
 tab-group tab-group::before {
   content: "" !important;
   position: absolute !important;
-  left: -6px !important;
-  right: auto !important;
+  right: -6px !important;
+  left: auto !important;
   top: 0 !important;
   bottom: 0 !important;
   width: 1.5px !important;
@@ -400,21 +410,21 @@ tab-group tab-group::before {
   display: none !important;
 }
 
-/* Tab Group Container & Collapsed Tab Hiding Rules */
+/* Tab Group Container & Collapsed Tab Hiding Rules (Mirrored for Left vs Right Sidebar) */
 tab-group:not([split-view-group]) .tab-group-container {
   max-height: 100% !important;
   position: relative !important;
-  margin-left: 12px !important;
-  margin-right: 0 !important;
-  margin-inline-start: 12px !important;
-  margin-inline-end: 0 !important;
+  margin-right: 12px !important;
+  margin-left: 0 !important;
+  margin-inline-start: 0 !important;
+  margin-inline-end: 12px !important;
 }
 
 tab-group:not([split-view-group]) .tab-group-container::after {
   content: "" !important;
   position: absolute !important;
-  left: -6px !important;
-  right: auto !important;
+  right: -6px !important;
+  left: auto !important;
   top: 0 !important;
   background: var(--zen-colors-border, rgba(255, 255, 255, 0.15)) !important;
   height: 100% !important;
@@ -423,21 +433,24 @@ tab-group:not([split-view-group]) .tab-group-container::after {
 }
 
 /* Right Sidebar Mode Overrides (Outer edge is on the RIGHT) */
-html[zen-sidebar-right="true"] tab-group tab-group {
-  margin-right: 12px !important;
-  margin-left: 0 !important;
+html[zen-sidebar-right="true"] tab-group tab-group,
+html[zen-right-side="true"] tab-group tab-group {
+  margin-left: 12px !important;
+  margin-right: 0 !important;
 }
 
-html[zen-sidebar-right="true"] tab-group tab-group::before {
-  right: -6px !important;
-  left: auto !important;
+html[zen-sidebar-right="true"] tab-group tab-group::before,
+html[zen-right-side="true"] tab-group tab-group::before {
+  left: -6px !important;
+  right: auto !important;
 }
 
-html[zen-sidebar-right="true"] tab-group:not([split-view-group]) .tab-group-container {
-  margin-right: 12px !important;
-  margin-left: 0 !important;
-  margin-inline-start: 0 !important;
-  margin-inline-end: 12px !important;
+html[zen-sidebar-right="true"] tab-group:not([split-view-group]) .tab-group-container,
+html[zen-right-side="true"] tab-group:not([split-view-group]) .tab-group-container {
+  margin-right: 0 !important;
+  margin-left: 12px !important;
+  margin-inline-start: 12px !important;
+  margin-inline-end: 0 !important;
 }
 
 html[zen-sidebar-right="true"] tab-group:not([split-view-group]) .tab-group-container::after {
