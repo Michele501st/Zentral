@@ -473,6 +473,10 @@
         .zen-app-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; display: block; }
         .zen-app-btn[data-pinned="true"] { background-color: color-mix(in srgb, currentColor 20%, transparent); }
         .zen-app-btn[data-pinned="true"] svg { fill: currentColor; stroke: currentColor; stroke-width: 0.5; }
+        .zen-app-close-btn { color: #ff4d4d !important; }
+        .zen-app-close-btn:hover { background-color: rgba(255, 77, 77, 0.22) !important; color: #ff6666 !important; }
+        .zen-app-close-btn svg { stroke: #ff4d4d !important; stroke-width: 2 !important; }
+        .zen-app-close-btn:hover svg { stroke: #ff6666 !important; }
         .zen-app-grabber { cursor: ew-resize; padding: 4px 2px; width: 26px; height: 24px; display: flex; align-items: center; justify-content: center; color: inherit; border-radius: 8px; user-select: none; transition: background-color 0.15s ease; }
         .zen-app-grabber:hover { background-color: color-mix(in srgb, currentColor 15%, transparent); }
         .zen-app-grabber svg { width: 10px; height: 14px; fill: currentColor; stroke: none; display: block; }
@@ -606,7 +610,7 @@
         grabberBtn.appendChild(this.#createSVG(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 14"><circle cx="3" cy="2.5" r="1.2"/><circle cx="7" cy="2.5" r="1.2"/><circle cx="3" cy="7" r="1.2"/><circle cx="7" cy="7" r="1.2"/><circle cx="3" cy="11.5" r="1.2"/><circle cx="7" cy="11.5" r="1.2"/></svg>`));
         grabberBtn.addEventListener("mousedown", this.startResize);
 
-        const closeBtn = document.createElement("button"); closeBtn.className = "zen-app-btn"; closeBtn.title = "Close panel";
+        const closeBtn = document.createElement("button"); closeBtn.className = "zen-app-btn zen-app-close-btn"; closeBtn.title = "Close panel";
         closeBtn.appendChild(this.#createSVG(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><line x1="4" y1="4" x2="12" y2="12"/><line x1="12" y1="4" x2="4" y2="12"/></svg>`));
         closeBtn.addEventListener("click", (e) => { e.stopPropagation(); this.closePanel(); });
 
@@ -1893,31 +1897,45 @@
         }
 
         /* Zentral Color Picker Panel Styling */
-        #zentral-group-color-picker {
+        #zentral-group-color-picker,
+        #zentral-group-color-picker::part(content),
+        #zentral-group-color-picker::part(arrow),
+        panel#zentral-group-color-picker,
+        #zentral-group-color-picker .panel-arrowcontent,
+        #zentral-group-color-picker .panel-subview-body {
           --panel-background: transparent !important;
           --panel-border-color: transparent !important;
+          --panel-box-shadow: none !important;
+          --panel-padding: 0 !important;
+          --arrowpanel-background: transparent !important;
+          --arrowpanel-border-color: transparent !important;
+          --arrowpanel-border-radius: 0px !important;
+          --arrowpanel-borderRadius: 0px !important;
+          --arrowpanel-box-shadow: none !important;
+          --arrowpanel-padding: 0 !important;
+          --arrowpanel-margin: 0 !important;
           border: none !important;
           background: transparent !important;
-        }
-
-        #zentral-group-color-picker::part(content) {
-          border: none !important;
-          background: transparent !important;
-          padding: 0 !important;
+          background-color: transparent !important;
           box-shadow: none !important;
+          outline: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
         }
 
         .ztg-cp-box {
-          padding: 14px !important;
-          gap: 12px !important;
-          background: var(--tabpanels-background-color, var(--in-content-page-background, #16161a)) !important;
+          padding: 12px 14px 14px 14px !important;
+          gap: 10px !important;
+          background: #1e1e24 !important;
           color: var(--in-content-page-color, #fbfbfe) !important;
-          border: 1px solid color-mix(in srgb, currentColor 12%, rgba(255, 255, 255, 0.08)) !important;
-          border-radius: 16px !important;
-          box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px color-mix(in srgb, currentColor 10%, transparent) !important;
-          backdrop-filter: blur(16px) !important;
-          width: 172px !important;
+          border: 1px solid color-mix(in srgb, currentColor 14%, rgba(255, 255, 255, 0.12)) !important;
+          border-radius: 18px !important;
+          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75) !important;
+          backdrop-filter: blur(20px) !important;
+          width: 184px !important;
           box-sizing: border-box !important;
+          margin: 0 !important;
+          overflow: visible !important;
         }
 
         .zentral-color-swatch {
@@ -1979,12 +1997,12 @@
 
         .ztg-drag-handle {
           width: 100% !important;
-          height: 14px !important;
+          height: 18px !important;
           display: flex !important;
           align-items: center !important;
           justify-content: center !important;
           cursor: grab !important;
-          margin-top: -6px !important;
+          margin-top: -2px !important;
           margin-bottom: 2px !important;
           user-select: none !important;
           -moz-user-select: none !important;
@@ -2443,6 +2461,22 @@
         });
       }
 
+      // Wrap title elements in .zentral-tab-title-wrapper for physical Folder Tab contour
+      if (!labelContainer.querySelector(".zentral-tab-title-wrapper")) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "zentral-tab-title-wrapper";
+        const iconContainer = labelContainer.querySelector(".tab-group-icon-container");
+        const innerLabel = labelContainer.querySelector(".tab-group-label");
+        const initialsEl = labelContainer.querySelector(".zentral-group-initials");
+        const closeBtn = labelContainer.querySelector(".tab-close-button");
+
+        if (iconContainer) wrapper.appendChild(iconContainer);
+        if (innerLabel) wrapper.appendChild(innerLabel);
+        if (initialsEl) wrapper.appendChild(initialsEl);
+
+        labelContainer.insertBefore(wrapper, closeBtn || labelContainer.firstChild);
+      }
+
       group.classList.remove('tab-group-editor-mode-create');
       this.#processedGroups.add(group);
       group.setAttribute("data-close-button-added", "true"); // Kept for external compatibility
@@ -2542,20 +2576,21 @@
             <html:div id="ztg-drag-handle" class="ztg-drag-handle" title="Drag to move">
               <html:div class="ztg-drag-pill"></html:div>
             </html:div>
-            <html:div id="ztg-palette-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: 144px; height: 144px;">
+            <html:div id="ztg-palette-container" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; width: 156px; height: 144px;">
               ${htmlPalette}
             </html:div>
-            <html:div id="ztg-wheel-container" style="display: none; flex-direction: column; gap: 6px; align-items: center; width: 144px; height: 144px;">
-              <html:canvas id="ztg-satval-canvas" width="144" height="124" style="border-radius: 8px; cursor: crosshair; border: 1px solid color-mix(in srgb, currentColor 12%, transparent);"></html:canvas>
-              <html:canvas id="ztg-hue-canvas" width="144" height="14" style="border-radius: 8px; cursor: pointer; border: 1px solid color-mix(in srgb, currentColor 12%, transparent);"></html:canvas>
+            <html:div id="ztg-wheel-container" style="display: none; flex-direction: column; gap: 6px; align-items: center; width: 156px; height: 144px;">
+              <html:canvas id="ztg-satval-canvas" width="156" height="124" style="border-radius: 8px; cursor: crosshair; border: 1px solid color-mix(in srgb, currentColor 12%, transparent);"></html:canvas>
+              <html:canvas id="ztg-hue-canvas" width="156" height="14" style="border-radius: 8px; cursor: pointer; border: 1px solid color-mix(in srgb, currentColor 12%, transparent);"></html:canvas>
             </html:div>
-            <hbox style="align-items: center; justify-content: space-between; gap: 6px;">
+            <hbox style="align-items: center; justify-content: space-between; gap: 4px; width: 156px;">
+              <html:button id="ztg-btn-auto" class="ztg-btn" title="Average Group's Color">Auto</html:button>
               <html:button id="ztg-btn-wheel" class="ztg-btn">Wheel</html:button>
               <html:button id="ztg-btn-pick" class="ztg-btn">Pick</html:button>
             </hbox>
-            <hbox style="align-items: center; justify-content: space-between; gap: 6px;">
-              <html:input id="ztg-input-hex" type="text" placeholder="#HEX" class="ztg-input" style="width: 64px;"/>
-              <html:input id="ztg-input-rgb" type="text" placeholder="R, G, B" class="ztg-input" style="width: 74px;"/>
+            <hbox style="align-items: center; justify-content: space-between; gap: 6px; width: 156px;">
+              <html:input id="ztg-input-hex" type="text" placeholder="#HEX" class="ztg-input" style="width: 70px;"/>
+              <html:input id="ztg-input-rgb" type="text" placeholder="R, G, B" class="ztg-input" style="width: 80px;"/>
             </hbox>
           </vbox>
         </panel>
@@ -2564,13 +2599,27 @@
       const panel = frag.firstElementChild;
       document.body.appendChild(panel);
 
-      // Panel Dragging Handle Logic
+      // High-Performance RAF Panel Dragging Logic (0 Lag)
       const dragHandle = panel.querySelector("#ztg-drag-handle");
       let isDraggingPanel = false;
       let startPanelX = 0;
       let startPanelY = 0;
       let startMouseX = 0;
       let startMouseY = 0;
+      let targetX = 0;
+      let targetY = 0;
+      let dragRafId = null;
+
+      const updateDragPosition = () => {
+        if (!isDraggingPanel) return;
+        if (typeof panel.moveTo === "function") {
+          panel.moveTo(targetX, targetY);
+        } else {
+          panel.style.left = targetX + "px";
+          panel.style.top = targetY + "px";
+        }
+        dragRafId = null;
+      };
 
       if (dragHandle) {
         dragHandle.addEventListener("mousedown", (e) => {
@@ -2578,10 +2627,12 @@
           isDraggingPanel = true;
           startMouseX = e.screenX;
           startMouseY = e.screenY;
-          
+
           const rect = panel.getBoundingClientRect();
           startPanelX = panel.screenX !== undefined ? panel.screenX : window.screenX + rect.left;
           startPanelY = panel.screenY !== undefined ? panel.screenY : window.screenY + rect.top;
+          targetX = startPanelX;
+          targetY = startPanelY;
 
           e.preventDefault();
           e.stopPropagation();
@@ -2591,19 +2642,20 @@
           if (!isDraggingPanel) return;
           const dx = e.screenX - startMouseX;
           const dy = e.screenY - startMouseY;
-          const newX = startPanelX + dx;
-          const newY = startPanelY + dy;
-          
-          if (typeof panel.moveTo === "function") {
-            panel.moveTo(newX, newY);
-          } else {
-            panel.style.left = newX + "px";
-            panel.style.top = newY + "px";
+          targetX = startPanelX + dx;
+          targetY = startPanelY + dy;
+
+          if (!dragRafId) {
+            dragRafId = requestAnimationFrame(updateDragPosition);
           }
         });
 
         window.addEventListener("mouseup", () => {
           isDraggingPanel = false;
+          if (dragRafId) {
+            cancelAnimationFrame(dragRafId);
+            dragRafId = null;
+          }
         });
       }
 
@@ -2704,6 +2756,22 @@
         window.removeEventListener("mousemove", onSatHueMouseMove);
         window.removeEventListener("mouseup", onSatHueMouseUp);
       }, { once: true });
+
+      panel.querySelector("#ztg-btn-auto").addEventListener("click", () => {
+        if (panel._currentGroup && typeof panel._currentGroup._useFaviconColor === "function") {
+          panel._currentGroup._useFaviconColor();
+          const currentColor = panel._currentGroup.style.getPropertyValue("--tab-group-color").trim();
+          if (currentColor) {
+            const hex = currentColor.startsWith("#") && currentColor.length >= 7 ? currentColor.substring(0, 7) : currentColor;
+            panel.querySelector("#ztg-input-hex").value = hex;
+            if (hex.startsWith("#") && hex.length === 7) {
+              const bigint = parseInt(hex.slice(1), 16);
+              const rgbInput = panel.querySelector("#ztg-input-rgb");
+              if (rgbInput) rgbInput.value = `${(bigint >> 16) & 255}, ${(bigint >> 8) & 255}, ${bigint & 255}`;
+            }
+          }
+        }
+      });
 
       panel.querySelector("#ztg-btn-wheel").addEventListener("click", () => {
         const paletteContainer = panel.querySelector("#ztg-palette-container");
