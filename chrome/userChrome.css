@@ -193,9 +193,18 @@ html[zen-right-side="true"] #tabbrowser-tabs tab-group > .tab-group-label-contai
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, #777777)) 85%, #ffffff 15%) !important;
 }
 
+/* Left Sidebar Mode (default): Inner edge is on the LEFT -> top-left & bottom-left inner curve */
 #tabbrowser-tabs tab-group > .tab-group-label-container:hover .zentral-tab-title-wrapper,
 #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container .zentral-tab-title-wrapper {
   background-color: color-mix(in srgb, var(--zentral-custom-color, var(--tab-group-color, #777777)) 85%, #ffffff 15%) !important;
+  border-radius: 16px 14px 14px 4px !important;
+}
+
+/* Right Sidebar Mode: Inner edge is on the RIGHT -> top-right & bottom-right inner curve */
+html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-container:hover .zentral-tab-title-wrapper,
+html[zen-sidebar-right="true"] #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container .zentral-tab-title-wrapper,
+html[zen-right-side="true"] #tabbrowser-tabs tab-group > .tab-group-label-container:hover .zentral-tab-title-wrapper,
+html[zen-right-side="true"] #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container .zentral-tab-title-wrapper {
   border-radius: 14px 16px 4px 14px !important;
 }
 
@@ -209,6 +218,13 @@ html[zentral-label-opacity-below-85="true"] #tabbrowser-tabs tab-group:has(tab:h
 html[zentral-label-opacity-below-85="true"] #tabbrowser-tabs tab-group > .tab-group-label-container:hover .zentral-tab-title-wrapper,
 html[zentral-label-opacity-below-85="true"] #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container .zentral-tab-title-wrapper {
   background-color: var(--zentral-custom-color, var(--tab-group-color, #777777)) !important;
+  border-radius: 16px 14px 14px 4px !important;
+}
+
+html[zentral-label-opacity-below-85="true"][zen-sidebar-right="true"] #tabbrowser-tabs tab-group > .tab-group-label-container:hover .zentral-tab-title-wrapper,
+html[zentral-label-opacity-below-85="true"][zen-sidebar-right="true"] #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container .zentral-tab-title-wrapper,
+html[zentral-label-opacity-below-85="true"][zen-right-side="true"] #tabbrowser-tabs tab-group > .tab-group-label-container:hover .zentral-tab-title-wrapper,
+html[zentral-label-opacity-below-85="true"][zen-right-side="true"] #tabbrowser-tabs tab-group:has(tab:hover) > .tab-group-label-container .zentral-tab-title-wrapper {
   border-radius: 14px 16px 4px 14px !important;
 }
 
