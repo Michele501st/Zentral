@@ -1720,20 +1720,23 @@
       this.setupObserver();
       this.addFolderContextMenuItems();
       this.removeBuiltinTabGroupMenu();
+      this.enhanceTabContextMenu();
       this.processExistingGroups();
       
       setTimeout(() => this.processExistingGroups(), 1000);
-      document.addEventListener("TabGroupCreate", this.onTabGroupCreate);
+      document.addEventListener("TabGroupCreate", (e) => this.onTabGroupCreate(e));
 
       // Collapsed Sidebar observer for Tab Groups
       const prefName = "zen.view.sidebar-expanded";
       const updateSidebarAttr = () => {
         try {
           const expanded = Core.getNativePref(prefName, true);
+          const isCollapsed = !expanded || document.documentElement.getAttribute("zen-sidebar-collapsed") === "true" || document.documentElement.getAttribute("zen-compact-mode") === "true";
           const tabContainer = document.getElementById("tabbrowser-tabs");
           if (tabContainer) {
-            tabContainer.setAttribute("zentral-sidebar-collapsed", !expanded ? "true" : "false");
+            tabContainer.setAttribute("zentral-sidebar-collapsed", isCollapsed ? "true" : "false");
           }
+          document.documentElement.setAttribute("zentral-sidebar-collapsed", isCollapsed ? "true" : "false");
         } catch (e) {}
       };
       updateSidebarAttr();
@@ -1843,6 +1846,24 @@
           align-items: center !important;
           gap: 10px !important;
           max-width: 320px !important;
+        }
+        #tab-label-input {
+          background: rgba(0, 0, 0, 0.3) !important;
+          border: 1px solid color-mix(in srgb, currentColor 40%, transparent) !important;
+          border-radius: 6px !important;
+          color: var(--zentral-tabgroup-contrast-color, var(--atg-contrast-color, #ffffff)) !important;
+          font-size: 12.5px !important;
+          font-weight: 600 !important;
+          font-family: inherit !important;
+          text-align: center !important;
+          padding: 2px 6px !important;
+          margin: 0 !important;
+          outline: none !important;
+          width: 100% !important;
+          max-width: 180px !important;
+          box-sizing: border-box !important;
+          order: 2 !important;
+          box-shadow: inset 0 1px 3px rgba(0,0,0,0.3) !important;
         }
         .zentral-tooltip-row:hover {
           background-color: color-mix(in srgb, currentColor 10%, transparent) !important;
@@ -2093,27 +2114,34 @@
     renameGroupKeydown(event) {
       event.stopPropagation();
       if (event.key === 'Enter') {
-        let label = this.#state.groupEdited;
-        let input = document.getElementById('tab-label-input');
-        let newName = input.value.trim();
+        event.preventDefault();
+        const label = this.#state.groupEdited;
+        const input = document.getElementById('tab-label-input');
+        if (!input || !label) return;
+
+        const newName = input.value.trim();
+        const group = label.closest('tab-group');
+
         document.documentElement.removeAttribute('zen-renaming-group');
         input.remove();
-        if (label && newName) {
-          const group = label.closest('tab-group');
-          if (group && newName !== group.label) {
-            group.label = newName;
-            const labelContainer = group.querySelector('.tab-group-label-container');
-            if (labelContainer) {
-              const initialsEl = labelContainer.querySelector('.zentral-group-initials');
-              if (initialsEl) initialsEl.textContent = this.getGroupInitials(newName);
-            }
-          }
-        }
         label.classList.remove('tab-group-label-editing');
         label.style.display = '';
+
+        if (group && newName) {
+          group.label = newName;
+          try { group.setAttribute('label', newName); } catch (_) {}
+          label.textContent = newName;
+          const labelContainer = group.querySelector('.tab-group-label-container');
+          if (labelContainer) {
+            const initialsEl = labelContainer.querySelector('.zentral-group-initials');
+            if (initialsEl) initialsEl.textContent = this.getGroupInitials(newName);
+          }
+          this.scheduleStateSave();
+        }
         this.#state.groupEdited = null;
       } else if (event.key === 'Escape') {
-        event.target.blur();
+        event.preventDefault();
+        this.renameGroupHalt(event, true);
       }
     }
 
@@ -2123,51 +2151,60 @@
      * @param {boolean} [selectAll=true] - Whether to select full text in input.
      */
     renameGroupStart(group, selectAll = true) {
-      if (this.#state.groupEdited) return;
+      if (!group || this.#state.groupEdited) return;
       const labelElement = group.querySelector('.tab-group-label');
       if (!labelElement) return;
-      
+
       this.#state.groupEdited = labelElement;
+      this.#state.isStartingRename = true;
+      setTimeout(() => { this.#state.isStartingRename = false; }, 350);
+
       document.documentElement.setAttribute('zen-renaming-group', 'true');
       labelElement.classList.add('tab-group-label-editing');
       labelElement.style.display = 'none';
-      
+
       const input = document.createElement('input');
       input.id = 'tab-label-input';
-      input.className = 'tab-group-label';
+      input.className = 'tab-group-label-input';
       input.type = 'text';
       input.value = group.label || labelElement.textContent || '';
       input.setAttribute('autocomplete', 'off');
-      input.style.caretColor = 'auto';
-      
+
       labelElement.after(input);
-      input.focus();
-      
-      if (selectAll) {
-        input.select();
-      } else {
+      setTimeout(() => {
         try {
-          const len = input.value.length;
-          input.setSelectionRange(len, len);
+          input.focus();
+          if (selectAll) input.select();
+          else {
+            const len = input.value.length;
+            input.setSelectionRange(len, len);
+          }
         } catch (_) {}
-      }
-      
-      input.addEventListener('keydown', this.renameGroupKeydown);
-      input.addEventListener('blur', this.renameGroupHalt);
+      }, 50);
+
+      input.addEventListener('keydown', (e) => this.renameGroupKeydown(e));
+      input.addEventListener('blur', (e) => this.renameGroupHalt(e));
     }
 
     /**
      * Halts tab group title rename operation and restores original text label.
      * @param {FocusEvent} event - Blur event on text input.
+     * @param {boolean} [force=false] - Force halt regardless of active state.
      */
-    renameGroupHalt(event) {
-      if (document.activeElement === event.target || !this.#state.groupEdited) return;
+    renameGroupHalt(event, force = false) {
+      if (this.#state.isStartingRename && !force) return;
+      if (!this.#state.groupEdited) return;
+
+      const input = document.getElementById('tab-label-input');
+      if (input && document.activeElement === input && !force) return;
+
       document.documentElement.removeAttribute('zen-renaming-group');
-      let input = document.getElementById('tab-label-input');
       if (input) input.remove();
-      this.#state.groupEdited.classList.remove('tab-group-label-editing');
-      this.#state.groupEdited.style.display = '';
-      this.#state.groupEdited = null;
+      if (this.#state.groupEdited) {
+        this.#state.groupEdited.classList.remove('tab-group-label-editing');
+        this.#state.groupEdited.style.display = '';
+        this.#state.groupEdited = null;
+      }
     }
 
     /**
@@ -2366,6 +2403,12 @@
           if (hoverTimer) clearTimeout(hoverTimer);
           const panel = document.getElementById("zentral-tabgroup-tooltip");
           if (panel && panel.hidePopup) panel.hidePopup();
+        });
+        labelContainer.addEventListener("dblclick", (e) => {
+          if (e.target.closest(".tab-close-button") || e.target.closest(".tab-group-icon")) return;
+          e.preventDefault();
+          e.stopPropagation();
+          this.renameGroupStart(group, true);
         });
 
         const labelValue = group.label || (innerLabel ? innerLabel.textContent : '');
@@ -2777,6 +2820,64 @@
           });
         }
       }, 1500);
+    }
+
+    /**
+     * Removes or cleans up native tab group context menus if present.
+     */
+    removeBuiltinTabGroupMenu() {
+      try {
+        const builtinMenu = document.getElementById("tabGroupContextMenu");
+        if (builtinMenu) builtinMenu.remove();
+      } catch (_) {}
+    }
+
+    /**
+     * Enhances native tab context menu (#tabContextMenu) to ensure all existing
+     * tab groups are populated and selectable when right-clicking tabs to add/move to group.
+     */
+    enhanceTabContextMenu() {
+      const tabContextMenu = document.getElementById("tabContextMenu");
+      if (!tabContextMenu || tabContextMenu._zentralEnhanced) return;
+      tabContextMenu._zentralEnhanced = true;
+
+      const populateSubMenu = (menuPopup) => {
+        if (!menuPopup) return;
+        const groups = Array.from(document.querySelectorAll("tab-group:not([split-view-group])"));
+        groups.forEach(group => {
+          const label = group.label || group.getAttribute("label");
+          if (!group.id || !label) return;
+          if (menuPopup.querySelector(`[zentral-group-id="${group.id}"]`)) return;
+
+          const item = document.createXULElement("menuitem");
+          item.setAttribute("zentral-group-id", group.id);
+          item.setAttribute("label", label);
+          item.setAttribute("class", "menuitem-iconic zentral-group-menuitem");
+          const color = group.style.getPropertyValue("--tab-group-color") || group.style.getPropertyValue("--zentral-custom-color");
+          if (color) {
+            item.style.setProperty("--menu-icon-color", color);
+          }
+          item.addEventListener("command", (evt) => {
+            evt.stopPropagation();
+            const selectedTabs = gBrowser.selectedTabs || (gBrowser.selectedTab ? [gBrowser.selectedTab] : []);
+            if (selectedTabs.length > 0) {
+              if (typeof gBrowser.addTabToGroup === "function") {
+                selectedTabs.forEach(t => gBrowser.addTabToGroup(t, group));
+              } else if (typeof group.addTabs === "function") {
+                group.addTabs(selectedTabs);
+              }
+            }
+          });
+          menuPopup.appendChild(item);
+        });
+      };
+
+      tabContextMenu.addEventListener("popupshowing", (e) => {
+        try {
+          const subPopups = document.querySelectorAll("#context_tabToGroupPopup, #context_moveTabToGroupPopup, #context_zenTabToGroupPopup, .context-tab-to-group menupopup");
+          subPopups.forEach(popup => populateSubMenu(popup));
+        } catch (_) {}
+      });
     }
 
     /**

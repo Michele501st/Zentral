@@ -322,7 +322,7 @@ tab-group:not([split-view-group])[collapsed] .tab-group-container tab:not([selec
   pointer-events: none !important;
 }
 
-/* Hide tree guide lines and native pseudo-elements when a tab group is collapsed/closed */
+/* Hide tree guide lines and native pseudo-elements when a tab group is collapsed/closed or in Collapsed Sidebar Mode */
 tab-group[collapsed] .tab-group-container::after,
 tab-group[collapsed] .tab-group-container::before,
 tab-group[collapsed]::before,
@@ -330,33 +330,97 @@ tab-group[collapsed]::after,
 tab-group[collapsed] > .tab-group-label-container::before,
 tab-group[collapsed] > .tab-group-label-container::after,
 tab-group:not([open]) .tab-group-container::after,
-tab-group:not([open]) .tab-group-container::before {
+tab-group:not([open]) .tab-group-container::before,
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group::before,
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group::after,
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group .tab-group-container::before,
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group .tab-group-container::after,
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container::before,
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container::after,
+html[zentral-sidebar-collapsed="true"] tab-group::before,
+html[zentral-sidebar-collapsed="true"] tab-group::after,
+html[zentral-sidebar-collapsed="true"] tab-group .tab-group-container::before,
+html[zentral-sidebar-collapsed="true"] tab-group .tab-group-container::after,
+html[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container::before,
+html[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container::after,
+html[zen-sidebar-collapsed="true"] tab-group::before,
+html[zen-sidebar-collapsed="true"] tab-group::after,
+html[zen-sidebar-collapsed="true"] tab-group .tab-group-container::before,
+html[zen-sidebar-collapsed="true"] tab-group .tab-group-container::after,
+html[zen-sidebar-collapsed="true"] tab-group > .tab-group-label-container::before,
+html[zen-sidebar-collapsed="true"] tab-group > .tab-group-label-container::after,
+html[zen-compact-mode="true"] tab-group::before,
+html[zen-compact-mode="true"] tab-group::after,
+html[zen-compact-mode="true"] tab-group .tab-group-container::before,
+html[zen-compact-mode="true"] tab-group .tab-group-container::after,
+html[zen-compact-mode="true"] tab-group > .tab-group-label-container::before,
+html[zen-compact-mode="true"] tab-group > .tab-group-label-container::after {
   display: none !important;
   content: none !important;
+  border: none !important;
+  width: 0 !important;
+  opacity: 0 !important;
 }
 
 /* Collapsed Sidebar Mode Styling */
-#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container.tab-group-label-container {
-  justify-content: flex-start !important;
-  padding: 4px 6px !important;
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container.tab-group-label-container,
+html[zentral-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container,
+html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container,
+html[zen-compact-mode="true"] #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container {
+  justify-content: center !important;
+  align-items: center !important;
+  padding: 0 !important;
   width: 100% !important;
   min-width: 100% !important;
   min-height: 28px !important;
   box-sizing: border-box !important;
 }
 
-#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container .tab-group-label {
+/* Disable Chevrons completely in Collapsed Sidebar Mode */
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group .tab-group-icon,
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group[collapsed] .tab-group-icon,
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] .tab-group-icon-container,
+html[zentral-sidebar-collapsed="true"] #tabbrowser-tabs tab-group .tab-group-icon,
+html[zentral-sidebar-collapsed="true"] #tabbrowser-tabs tab-group[collapsed] .tab-group-icon,
+html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group .tab-group-icon,
+html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group[collapsed] .tab-group-icon,
+html[zen-compact-mode="true"] #tabbrowser-tabs tab-group .tab-group-icon,
+html[zen-compact-mode="true"] #tabbrowser-tabs tab-group[collapsed] .tab-group-icon {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 0 !important;
+}
+
+/* Hide Label Title text in Collapsed Sidebar Mode */
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container .tab-group-label,
+html[zentral-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
+html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
+html[zen-compact-mode="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label {
   display: none !important;
 }
 
-#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container .zentral-group-initials {
+/* Show Initials centered & highly legible in Collapsed Sidebar Mode with Priority Contrast */
+#tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container .zentral-group-initials,
+html[zentral-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .zentral-group-initials,
+html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .zentral-group-initials,
+html[zen-compact-mode="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .zentral-group-initials {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  flex: 1 !important;
-  font-size: 11px !important;
+  flex: 1 1 auto !important;
+  font-size: 11.5px !important;
   font-weight: 700 !important;
-  color: var(--zentral-tabgroup-contrast-color, inherit) !important;
+  letter-spacing: 0.04em !important;
+  color: var(--zentral-tabgroup-contrast-color, var(--atg-contrast-color, #ffffff)) !important;
   text-align: center !important;
-  padding-right: 14px !important; /* Offset for the chevron */
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
 }
