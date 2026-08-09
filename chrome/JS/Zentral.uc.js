@@ -75,6 +75,7 @@
       PREF_MAX_APPS: "zen.workspace.apps.sidebar.max_apps",
       PREF_APPS_PER_ROW: "zen.workspace.apps.sidebar.apps_per_row",
       PREF_MAX_ROWS: "zen.workspace.apps.sidebar.max_rows",
+      PREF_COMPACT_DRAWER_ENABLED: "zen.workspace.apps.sidebar.compact_drawer_enabled",
       MIN_WIDTH_PX: 280,
       MAX_WIDTH_RATIO: 0.80,
       DEFAULT_SLIDE_MS: 450,
@@ -122,6 +123,7 @@
         [Constants.Apps.PREF_MAX_APPS]: Constants.Apps.DEFAULT_MAX_APPS,
         [Constants.Apps.PREF_APPS_PER_ROW]: Constants.Apps.DEFAULT_APPS_PER_ROW,
         [Constants.Apps.PREF_MAX_ROWS]: Constants.Apps.DEFAULT_MAX_ROWS,
+        [Constants.Apps.PREF_COMPACT_DRAWER_ENABLED]: false,
         [Constants.TabGroups.PREF_COLORS]: "{}",
         [Constants.TabGroups.PREF_STATE]: "{}",
         [Constants.TabGroups.PREF_ENABLED]: true,
@@ -421,7 +423,25 @@
      * @returns {boolean} True if sidebar is collapsed.
      */
     isCollapsedSidebar() {
-      return !Core.getNativePref("zen.view.sidebar-expanded", true);
+      if (document.documentElement.getAttribute("zen-sidebar-collapsed") === "true") return true;
+      if (document.getElementById("tabbrowser-tabs")?.getAttribute("zentral-sidebar-collapsed") === "true") return true;
+      if (!Core.getNativePref("zen.view.sidebar-expanded", true)) return true;
+
+      const sidebarBox = document.getElementById("sidebar-box") || document.getElementById("sidebar-container");
+      if (sidebarBox && (sidebarBox.getAttribute("collapsed") === "true" || sidebarBox.getAttribute("hidden") === "true")) return true;
+
+      return false;
+    }
+
+    /**
+     * Determines whether Zen Browser is using the "Collapsed Sidebar" layout mode (horizontal apps bar in top toolbar).
+     * @returns {boolean} True if in Collapsed Sidebar layout mode.
+     */
+    isCollapsedLayoutMode() {
+      if (this.#dom.grid?.classList.contains("zen-apps-horizontal")) return true;
+      const useSingleToolbar = Core.getNativePref("zen.view.use-single-toolbar", true);
+      const sidebarExpanded = Core.getNativePref("zen.view.sidebar-expanded", true);
+      return !useSingleToolbar && !sidebarExpanded;
     }
 
     /* --------------------------------------------------------------------------
@@ -629,6 +649,145 @@
         this.#dom.pinBtn = pinBtn;
         this.#dom.expandBtn = expandBtn;
       }
+
+      this.createCompactDrawerContainers();
+    }
+
+    /**
+     * Creates persistent DOM elements and event handlers for the Compact Sidebar Apps Drawer.
+     */
+    createCompactDrawerContainers() {
+      if (document.getElementById("zen-compact-apps-drawer")) return;
+
+      const trigger = document.createElement("div");
+      trigger.id = "zen-compact-apps-trigger";
+
+      const drawer = document.createElement("div");
+      drawer.id = "zen-compact-apps-drawer";
+
+      const header = document.createElement("div");
+      header.id = "zen-compact-apps-header";
+
+      const addBtn = document.createElement("button");
+      addBtn.className = "zen-app-tile zen-app-add-btn";
+      addBtn.title = "Add App";
+      addBtn.appendChild(this.#createSVG(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`));
+      addBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.closeCompactDrawer();
+        const tab = gBrowser.selectedTab; if (!tab) return;
+        const url = tab.linkedBrowser?.currentURI?.spec || "about:blank";
+        const title = tab.label || url;
+        const icon = (typeof gBrowser.getIcon === "function" ? gBrowser.getIcon(tab) : null) || tab.getAttribute("image") || tab.image || "";
+        if (url !== "about:blank") this.addApp(url, title, icon);
+      });
+      header.appendChild(addBtn);
+
+      const list = document.createElement("div");
+      list.id = "zen-compact-apps-list";
+
+      drawer.appendChild(header);
+      drawer.appendChild(list);
+
+      const container = document.body || document.documentElement;
+      container.appendChild(trigger);
+      container.appendChild(drawer);
+
+      this.#dom.compactTrigger = trigger;
+      this.#dom.compactDrawer = drawer;
+      this.#dom.compactList = list;
+
+      let openTimer = null;
+      let closeTimer = null;
+
+      const cancelTimers = () => {
+        if (openTimer) { clearTimeout(openTimer); openTimer = null; }
+        if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+      };
+
+      trigger.addEventListener("mouseenter", () => {
+        if (!this.isCollapsedSidebar() || Core.getPref(Constants.Apps.PREF_COMPACT_DRAWER_ENABLED) === false) return;
+        cancelTimers();
+        openTimer = setTimeout(() => {
+          openTimer = null;
+          drawer.setAttribute("open", "true");
+        }, 120);
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!this.isCollapsedSidebar() || Core.getPref(Constants.Apps.PREF_COMPACT_DRAWER_ENABLED) === false) return;
+        if (e.clientY > window.innerHeight / 3) return;
+
+        const isRight = this.isSidebarRight();
+        const isNearEdge = isRight ? (e.clientX >= window.innerWidth - 18) : (e.clientX <= 18);
+
+        if (isNearEdge && !drawer.hasAttribute("open") && !openTimer) {
+          cancelTimers();
+          openTimer = setTimeout(() => {
+            openTimer = null;
+            drawer.setAttribute("open", "true");
+          }, 120);
+        }
+      }, { passive: true });
+
+      trigger.addEventListener("mouseleave", () => {
+        if (openTimer) { clearTimeout(openTimer); openTimer = null; }
+        closeTimer = setTimeout(() => {
+          closeTimer = null;
+          if (!drawer.matches(":hover")) drawer.removeAttribute("open");
+        }, 300);
+      });
+
+      drawer.addEventListener("mouseenter", () => {
+        cancelTimers();
+      });
+
+      drawer.addEventListener("mouseleave", () => {
+        cancelTimers();
+        closeTimer = setTimeout(() => {
+          closeTimer = null;
+          drawer.removeAttribute("open");
+        }, 300);
+      });
+
+      this.updateCompactDrawerState();
+    }
+
+    /**
+     * Immediately closes the Compact Sidebar Apps Drawer.
+     */
+    closeCompactDrawer() {
+      if (this.#dom.compactDrawer) {
+        this.#dom.compactDrawer.removeAttribute("open");
+      }
+    }
+
+    /**
+     * Updates the enabled/disabled DOM state of the Compact Sidebar Apps Drawer trigger and container.
+     */
+    updateCompactDrawerState() {
+      const enabled = Core.getPref(Constants.Apps.PREF_COMPACT_DRAWER_ENABLED, false) === true;
+      if (this.#dom.compactTrigger) {
+        if (enabled) {
+          this.#dom.compactTrigger.removeAttribute("disabled");
+          this.#dom.compactTrigger.style.display = "";
+          this.#dom.compactTrigger.style.pointerEvents = "";
+        } else {
+          this.#dom.compactTrigger.setAttribute("disabled", "true");
+          this.#dom.compactTrigger.style.display = "none";
+          this.#dom.compactTrigger.style.pointerEvents = "none";
+        }
+      }
+      if (this.#dom.compactDrawer) {
+        if (enabled) {
+          this.#dom.compactDrawer.removeAttribute("disabled");
+          this.#dom.compactDrawer.style.display = "";
+        } else {
+          this.#dom.compactDrawer.setAttribute("disabled", "true");
+          this.#dom.compactDrawer.removeAttribute("open");
+          this.#dom.compactDrawer.style.display = "none";
+        }
+      }
     }
 
     /**
@@ -659,6 +818,9 @@
       const activeApps = visibleApps.slice(0, maxApps);
       let draggedAppId = null;
       const fragment = document.createDocumentFragment();
+
+      this.updateCompactDrawerState();
+      this.renderCompactDrawer(activeApps);
 
       activeApps.forEach((app) => {
         const btn = document.createElement("button");
@@ -784,16 +946,12 @@
 
       targetContainer.appendChild(fragment);
 
-      if (this.#state.apps.length < maxApps) {
-        const addBtn = document.createElement("button"); 
-        addBtn.className = "zen-app-tile zen-app-add-btn"; 
-        addBtn.title = "Add current tab to Apps Section";
-        addBtn.appendChild(this.#createSVG(`<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>`));
-        
+      if (Core.getPref(Constants.Apps.PREF_ENABLED) && activeApps.length < maxApps) {
+        const addBtn = document.createElement("button");
+        addBtn.className = "zen-app-tile zen-app-add-btn";
+        addBtn.title = "Add App";
+        addBtn.appendChild(this.#createSVG(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`));
         addBtn.addEventListener("click", (e) => {
-          if (e.button !== 0) return;
-          e.preventDefault();
-          e.stopPropagation();
           const tab = gBrowser.selectedTab; if (!tab) return;
           const url = tab.linkedBrowser?.currentURI?.spec || "about:blank";
           const title = tab.label || url;
@@ -823,6 +981,67 @@
           this.updateScrollMask();
         }
       });
+    }
+
+    /**
+     * Renders the apps in the compact sidebar hover drawer.
+     * @param {Array} activeApps - Array of app configuration objects to render.
+     */
+    renderCompactDrawer(activeApps) {
+      if (!this.#dom.compactList) return;
+      this.#dom.compactList.innerHTML = "";
+      
+      const fragment = document.createDocumentFragment();
+      
+      activeApps.forEach((app) => {
+        const btn = document.createElement("button");
+        btn.id = "zen-compact-app-btn-" + app.id;
+        btn.className = "zen-app-tile";
+        btn.dataset.appId = app.id;
+        btn.dataset.active = (this.#state.activeAppId === app.id) ? "true" : "false";
+        btn.title = app.title || "";
+
+        const img = document.createElement("img");
+        img.src = app.icon || `page-icon:${app.url}`;
+        btn.appendChild(img);
+        
+        if (app.hasNotification) {
+          const badge = document.createElement("div");
+          badge.className = "zen-app-badge";
+          if (app.notificationCount) {
+            badge.textContent = app.notificationCount > 99 ? "99+" : app.notificationCount;
+          } else {
+            badge.setAttribute("data-dot", "true");
+          }
+          btn.appendChild(badge);
+        }
+
+        btn.addEventListener("click", (e) => {
+          if (e.button !== 0) return;
+          e.preventDefault();
+          e.stopPropagation();
+          
+          this.closeCompactDrawer();
+          if (this.#state.activeAppId === app.id) {
+            this.closePanel();
+          } else {
+            this.openPanel(app);
+          }
+        });
+
+        btn.addEventListener("contextmenu", (e) => {
+          e.preventDefault();
+          const popup = document.getElementById("zen-apps-sidebar-tile-context");
+          if (popup) { 
+            popup.dataset.activeAppId = app.id; 
+            popup.openPopupAtScreen(e.screenX, e.screenY, true); 
+          }
+        });
+        
+        fragment.appendChild(btn);
+      });
+      
+      this.#dom.compactList.appendChild(fragment);
     }
 
     /**
@@ -889,7 +1108,7 @@
       }
       
       // Update tile selection
-      const tiles = this.#dom.grid.querySelectorAll(".zen-app-tile[data-app-id]");
+      const tiles = document.querySelectorAll(".zen-app-tile[data-app-id]");
       tiles.forEach(tile => tile.dataset.active = (tile.dataset.appId === app.id) ? "true" : "false");
       
       const targetWidth = app.width || this.loadWidth();
@@ -914,8 +1133,8 @@
         } catch (e) { console.error("[ZentralApps] Failed to load URL:", e); }
       }
 
-      const isCollapsed = this.isCollapsedSidebar();
-      const slideFrom = isCollapsed 
+      const isTopSlide = this.isCollapsedLayoutMode();
+      const slideFrom = isTopSlide 
         ? "translateY(-100%)" 
         : (this.isSidebarRight() ? "translateX(100%)" : "translateX(-100%)");
       this.#dom.panel.style.transition = "none";
@@ -936,7 +1155,7 @@
         } else {
           this.#dom.panel.style.transition = `transform ${slideMs}ms ${bezier}`;
         }
-        this.#dom.panel.style.transform  = isCollapsed ? "translateY(0)" : "translateX(0)";
+        this.#dom.panel.style.transform  = isTopSlide ? "translateY(0)" : "translateX(0)";
       });
     }
 
@@ -966,11 +1185,11 @@
       this.#state.activeAppId = null;
       this.#state.isPinned = false;
       
-      const tiles = this.#dom.grid.querySelectorAll(".zen-app-tile[data-app-id]");
+      const tiles = document.querySelectorAll(".zen-app-tile[data-app-id]");
       tiles.forEach(tile => tile.dataset.active = "false");
 
-      const isCollapsed = this.isCollapsedSidebar();
-      const slideTo = isCollapsed 
+      const isTopSlide = this.isCollapsedLayoutMode();
+      const slideTo = isTopSlide 
         ? "translateY(-100%)" 
         : (this.isSidebarRight() ? "translateX(100%)" : "translateX(-100%)");
       
@@ -1037,26 +1256,29 @@
           app.hasNotification = hasNotification;
           app.notificationCount = notifCount;
           
-          const btn = document.getElementById("zen-app-btn-" + app.id);
-          if (btn) {
-            let badge = btn.querySelector(".zen-app-badge");
-            if (hasNotification) {
-              if (!badge) {
-                badge = document.createElement("div");
-                badge.className = "zen-app-badge";
-                btn.appendChild(badge);
-              }
-              if (notifCount) {
-                 badge.textContent = notifCount > 99 ? "99+" : notifCount;
-                 badge.removeAttribute("data-dot");
+          const updateBadge = (btn) => {
+            if (btn) {
+              let badge = btn.querySelector(".zen-app-badge");
+              if (hasNotification) {
+                if (!badge) {
+                  badge = document.createElement("div");
+                  badge.className = "zen-app-badge";
+                  btn.appendChild(badge);
+                }
+                if (notifCount) {
+                   badge.textContent = notifCount > 99 ? "99+" : notifCount;
+                   badge.removeAttribute("data-dot");
+                } else {
+                   badge.textContent = "";
+                   badge.setAttribute("data-dot", "true");
+                }
               } else {
-                 badge.textContent = "";
-                 badge.setAttribute("data-dot", "true");
+                if (badge) badge.remove();
               }
-            } else if (badge) {
-              badge.remove();
             }
-          }
+          };
+          updateBadge(document.getElementById("zen-app-btn-" + app.id));
+          updateBadge(document.getElementById("zen-compact-app-btn-" + app.id));
         }
       };
       b.addEventListener("pagetitlechanged", titleHandler);
@@ -1735,7 +1957,7 @@
       const updateSidebarAttr = () => {
         try {
           const expanded = Core.getNativePref(prefName, true);
-          const isCollapsed = !expanded || document.documentElement.getAttribute("zen-sidebar-collapsed") === "true" || document.documentElement.getAttribute("zen-compact-mode") === "true";
+          const isCollapsed = !expanded || document.documentElement.getAttribute("zen-sidebar-collapsed") === "true";
           const tabContainer = document.getElementById("tabbrowser-tabs");
           if (tabContainer) {
             tabContainer.setAttribute("zentral-sidebar-collapsed", isCollapsed ? "true" : "false");
@@ -3456,6 +3678,7 @@
       const get = (id) => this.modal.querySelector("#" + id);
       if (!get("zs-anim-speed")) return;
       get("zs-ag-enabled").checked = Core.getPref(Constants.Apps.PREF_ENABLED);
+      if (get("zs-ag-compact-drawer")) get("zs-ag-compact-drawer").checked = Core.getPref(Constants.Apps.PREF_COMPACT_DRAWER_ENABLED, false) === true;
       get("zs-anim-type").value = Core.getPref(Constants.Apps.PREF_ANIMATION_TYPE);
       get("zs-anim-speed").value = Core.getPref(Constants.Apps.PREF_ANIMATION_SPEED);
       get("zs-max-apps").value = Core.getPref(Constants.Apps.PREF_MAX_APPS);
@@ -3479,6 +3702,8 @@
       if (!this.modal) return;
       const get = (id) => this.modal.querySelector("#" + id);
       Core.setPref(Constants.Apps.PREF_ENABLED, get("zs-ag-enabled").checked);
+      if (get("zs-ag-compact-drawer")) Core.setPref(Constants.Apps.PREF_COMPACT_DRAWER_ENABLED, get("zs-ag-compact-drawer").checked);
+      if (window.zentralApps) window.zentralApps.updateCompactDrawerState();
       Core.setPref(Constants.Apps.PREF_ANIMATION_TYPE, get("zs-anim-type").value);
       Core.setPref(Constants.Apps.PREF_ANIMATION_SPEED, parseInt(get("zs-anim-speed").value));
       Core.setPref(Constants.Apps.PREF_MAX_APPS, parseInt(get("zs-max-apps").value));
@@ -3899,6 +4124,17 @@
 
             <div class="zs-row">
               <div class="zs-label-container">
+                <span class="zs-label">Compact Sidebar Apps Drawer <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background: color-mix(in srgb, #ff6b6b 20%, transparent); color: #ff6b6b; font-weight: 600; margin-left: 6px; text-transform: uppercase;">Experimental</span></span>
+                <span class="zs-sublabel">Hover top 1/3 screen edge in compact mode to reveal vertical Apps drawer</span>
+              </div>
+              <label class="zs-switch">
+                <input type="checkbox" id="zs-ag-compact-drawer" />
+                <span class="zs-slider"></span>
+              </label>
+            </div>
+
+            <div class="zs-row">
+              <div class="zs-label-container">
                 <span class="zs-label">Animation type</span>
               </div>
               <select id="zs-anim-type" class="zs-select">
@@ -4029,6 +4265,7 @@
       this.modal.querySelector("#zs-ag-reset").addEventListener("click", () => {
         const get = (id) => this.modal.querySelector("#" + id);
         get("zs-ag-enabled").checked = true;
+        if (get("zs-ag-compact-drawer")) get("zs-ag-compact-drawer").checked = false;
         get("zs-anim-type").value = "slide";
         get("zs-anim-speed").value = 450;
         get("zs-max-apps").value = 21;
