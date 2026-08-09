@@ -499,13 +499,7 @@ html[zen-sidebar-collapsed="true"] tab-group::after,
 html[zen-sidebar-collapsed="true"] tab-group .tab-group-container::before,
 html[zen-sidebar-collapsed="true"] tab-group .tab-group-container::after,
 html[zen-sidebar-collapsed="true"] tab-group > .tab-group-label-container::before,
-html[zen-sidebar-collapsed="true"] tab-group > .tab-group-label-container::after,
-html[zen-compact-mode="true"] tab-group::before,
-html[zen-compact-mode="true"] tab-group::after,
-html[zen-compact-mode="true"] tab-group .tab-group-container::before,
-html[zen-compact-mode="true"] tab-group .tab-group-container::after,
-html[zen-compact-mode="true"] tab-group > .tab-group-label-container::before,
-html[zen-compact-mode="true"] tab-group > .tab-group-label-container::after {
+html[zen-sidebar-collapsed="true"] tab-group > .tab-group-label-container::after {
   display: none !important;
   content: none !important;
   border: none !important;
@@ -516,8 +510,7 @@ html[zen-compact-mode="true"] tab-group > .tab-group-label-container::after {
 /* Collapsed Sidebar Mode Styling */
 #tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container.tab-group-label-container,
 html[zentral-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container,
-html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container,
-html[zen-compact-mode="true"] #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container {
+html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container.tab-group-label-container {
   justify-content: center !important;
   align-items: center !important;
   padding: 0 !important;
@@ -534,9 +527,7 @@ html[zen-compact-mode="true"] #tabbrowser-tabs tab-group > .tab-group-label-cont
 html[zentral-sidebar-collapsed="true"] #tabbrowser-tabs tab-group .tab-group-icon,
 html[zentral-sidebar-collapsed="true"] #tabbrowser-tabs tab-group[collapsed] .tab-group-icon,
 html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group .tab-group-icon,
-html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group[collapsed] .tab-group-icon,
-html[zen-compact-mode="true"] #tabbrowser-tabs tab-group .tab-group-icon,
-html[zen-compact-mode="true"] #tabbrowser-tabs tab-group[collapsed] .tab-group-icon {
+html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group[collapsed] .tab-group-icon {
   display: none !important;
   visibility: hidden !important;
   width: 0 !important;
@@ -551,16 +542,14 @@ html[zen-compact-mode="true"] #tabbrowser-tabs tab-group[collapsed] .tab-group-i
 /* Hide Label Title text in Collapsed Sidebar Mode */
 #tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container .tab-group-label,
 html[zentral-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
-html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label,
-html[zen-compact-mode="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label {
+html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .tab-group-label {
   display: none !important;
 }
 
 /* Show Initials centered & highly legible in Collapsed Sidebar Mode with Priority Contrast */
 #tabbrowser-tabs[zentral-sidebar-collapsed="true"] tab-group > .tab-group-label-container .zentral-group-initials,
 html[zentral-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .zentral-group-initials,
-html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .zentral-group-initials,
-html[zen-compact-mode="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .zentral-group-initials {
+html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label-container .zentral-group-initials {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
