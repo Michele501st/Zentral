@@ -1,4 +1,4 @@
-# 🌟 Zentral - Unified Apps Grid & Enhanced Tab Groups for Zen Browser
+# Zentral - Unified Apps Grid & Enhanced Tab Groups for Zen Browser
 <img width="811" height="593" alt="Zentral-Demo" src="https://github.com/user-attachments/assets/4dec0e5f-5b7f-4558-90a1-04775ec7f658" />
 
 ![Version](https://img.shields.io/badge/version-v0.1.5a-blue.svg)
@@ -11,7 +11,7 @@
 
 ## ✨ Features
 
-### 🚀 1. Floating Apps Grid & Panels
+### 1. Floating Apps Grid & Panels
 - **Grid Layout**: Display web app icons in a responsive sidebar grid or horizontal toolbar.
 - **Workspace Isolation**: Right-click any app button to set visibility to **Current Space** or **All Spaces**.
 - **Smooth Panel Transitions**: Slide-out panels powered by customizable easing curves (`slide`, `spring-gentle`, `spring-bouncy`, `elastic`).
@@ -22,7 +22,7 @@
 <img width="1919" height="1040" alt="Zentral-Collapsed" src="https://github.com/user-attachments/assets/af0720f3-e7e4-4e33-b12d-f67ccb8f6ec4" />
 
 
-### 🎨 2. Enhanced Tab Groups
+### 2. Enhanced Tab Groups
 - **Group Color Picker**: Integrated popup color wheel, preset swatches, RGB/Hex inputs, and a native screen eyedropper tool.
 - **Initials Badges**: Automatic 2-letter uppercase initials displayed when the sidebar is collapsed.
 - **Group Tooltips**: Hover over tab group pills to inspect instant tab lists.
@@ -30,7 +30,7 @@
 - **Folder Conversion**: Seamlessly convert native Zen folders into Tab Groups and vice versa.
 <img width="1919" height="1038" alt="Zentral-Groups" src="https://github.com/user-attachments/assets/d73f06d3-fa73-4f9c-95aa-e7cd0accb407" />
 
-### ⚙️ 3. Native Settings UI
+### 3. Native Settings UI
 - Integrated preferences modal dialog accessible directly from the app context menu to customize animation speeds, row caps, apps per row, and group defaults on the fly.
 <img width="1919" height="1039" alt="Zentral-Settings_1" src="https://github.com/user-attachments/assets/819fdd4a-64af-4488-8400-e5d4c9468104" />
 <img width="1919" height="1040" alt="Zentral-Settings_2" src="https://github.com/user-attachments/assets/0e7b50d3-0578-4d0e-9641-28585e4ec3b6" />
@@ -69,7 +69,7 @@ If you already have `fx-autoconfig` or a `.uc.js` loader installed:
 
 ---
 
-## 📜 Architecture & Index
+## Architecture & Index
 
 Zentral is organized into a modular, documented two-tier architecture:
 
@@ -111,7 +111,7 @@ Zentral is organized into a modular, documented two-tier architecture:
 
 ---
 
-## 📄 License
+## License
 
 Distributed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)](LICENSE).
 
