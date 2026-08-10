@@ -456,7 +456,7 @@
       if (document.getElementById("zen-apps-sidebar-styles") || this._stylesInjected) return;
       this._stylesInjected = true;
       const css = `
-        #zen-apps-sidebar-grid { display: grid; grid-template-columns: repeat(var(--zentral-grid-cols, 7), minmax(0, 36px)); justify-content: flex-start; gap: 6px; padding: 8px 10px; width: 100%; box-sizing: border-box; position: relative; z-index: 10; max-height: calc(var(--zentral-max-rows, 3) * 42px + 16px); overflow-y: auto; scrollbar-width: none; }
+        #zen-apps-sidebar-grid { display: grid; grid-template-columns: repeat(var(--zentral-grid-cols, 7), minmax(0, 1fr)); justify-items: center; align-items: center; gap: 6px; padding: 8px 10px; width: 100%; box-sizing: border-box; position: relative; z-index: 10; max-height: calc(var(--zentral-max-rows, 3) * 42px + 16px); overflow-y: auto; scrollbar-width: none; }
         #zen-apps-sidebar-grid::-webkit-scrollbar { display: none; }
         .zen-apps-scroll-box { display: contents; }
         #zen-apps-sidebar-grid.zen-apps-horizontal { display: flex; flex-direction: row; padding: 0 2px; gap: 2px; width: auto; align-items: center; -moz-window-dragging: no; position: relative; flex-shrink: 1 !important; min-width: 0 !important; margin-left: auto !important; }
@@ -506,14 +506,10 @@
         :root:not([zen-right-side="true"]) .zen-app-resize-strip { right: -5px; left: auto; }
       `;
       try {
-        const sheet = new CSSStyleSheet();
-        sheet.replaceSync(css);
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-      } catch (_) {
         const style = document.createElement("style");
         style.id = "zen-apps-sidebar-styles";
         style.textContent = css;
-        document.head.appendChild(style);
+        (document.head || document.documentElement).appendChild(style);
       }
     }
 
@@ -1730,8 +1726,10 @@
       const path = e.composedPath ? e.composedPath() : [];
       if (path.some(el => el.id === "zen-app-panel-root" || el.id === "zen-apps-sidebar-grid" || (el.classList && el.classList.contains("zen-app-tile")))) return;
       if (path.some(el => el.id === "navigator-toolbox" || el.id === "sidebar-box" || el.id === "PersonalToolbar" || el.id === "nav-bar")) return;
+      if (path.some(el => (el.id && el.id.includes("sine")) || (el.className && typeof el.className === "string" && el.className.includes("sine")))) return;
       if (e.target.closest && (e.target.closest("#zen-app-panel-root") || e.target.closest("#zen-apps-sidebar-grid") || e.target.closest(".zen-app-tile"))) return;
       if (e.target.closest && (e.target.closest("#navigator-toolbox") || e.target.closest("#sidebar-box") || e.target.closest("#PersonalToolbar") || e.target.closest("#nav-bar"))) return;
+      if (e.target.closest && (e.target.closest("[id*='sine']") || e.target.closest("[class*='sine']"))) return;
       
       console.log("[ZentralApps] handleOutsideClick closing panel due to click target:", e.target?.tagName, e.target?.id, e.target?.className);
       this.closePanel();
@@ -2249,13 +2247,10 @@
         }
       `;
       try {
-        const sheet = new CSSStyleSheet();
-        sheet.replaceSync(css);
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-      } catch (_) {
-        const styleEl = document.createElementNS("http://www.w3.org/1999/xhtml", "style");
+        const styleEl = document.createElement("style");
+        styleEl.id = "zentral-tabgroups-styles";
         styleEl.textContent = css;
-        document.documentElement.appendChild(styleEl);
+        (document.head || document.documentElement).appendChild(styleEl);
       }
     }
 
@@ -4077,14 +4072,10 @@
         }
       `;
       try {
-        const sheet = new CSSStyleSheet();
-        sheet.replaceSync(css);
-        document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
-      } catch (_) {
         const style = document.createElement("style");
         style.id = "zentral-settings-styles";
         style.textContent = css;
-        document.head.appendChild(style);
+        (document.head || document.documentElement).appendChild(style);
       }
     }
 

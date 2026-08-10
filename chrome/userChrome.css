@@ -98,7 +98,7 @@
   -webkit-backdrop-filter: blur(16px) saturate(140%) !important;
   z-index: 3 !important;
   position: relative !important;
-  max-width: 85% !important;
+  max-width: 100% !important;
   box-sizing: border-box !important;
   margin-left: auto !important;
   margin-right: 0 !important;
@@ -698,4 +698,22 @@ html[zen-sidebar-collapsed="true"] #tabbrowser-tabs tab-group > .tab-group-label
   max-height: 34px !important;
   border-radius: 8px !important;
   flex-shrink: 0 !important;
+}
+
+/* ===========================================================================
+   Zentral - Extended Native Sidebar Resizing & Width Flexibility
+   (Compatible with Sine Theme Manager & Sine Compact Sidebar Mods)
+   =========================================================================== */
+:root:not([mod-sameerasw_zen_compact_sidebar_type]) #navigator-toolbox,
+:root:not([mod-sameerasw_zen_compact_sidebar_type]) #sidebar-box,
+:root:not([mod-sameerasw_zen_compact_sidebar_type]) #sidebar-container,
+:root:not([mod-sameerasw_zen_compact_sidebar_type]) .sidebar-panel {
+  max-width: 50vw !important;
+}
+
+/* Enforce minimum width for Sidebar when expanded so it cannot be crushed smaller than Apps Grid */
+:root[zen-sidebar-expanded="true"]:not([zentral-sidebar-collapsed="true"]):not([mod-sameerasw_zen_compact_sidebar_type]) #navigator-toolbox,
+:root[zen-sidebar-expanded="true"]:not([zentral-sidebar-collapsed="true"]):not([mod-sameerasw_zen_compact_sidebar_type]) #sidebar-box,
+:root[zen-sidebar-expanded="true"]:not([zentral-sidebar-collapsed="true"]):not([mod-sameerasw_zen_compact_sidebar_type]) #sidebar-container {
+  min-width: var(--zentral-sidebar-min-width, 240px) !important;
 }
