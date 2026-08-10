@@ -1,0 +1,18 @@
+{
+  "id": "zentral",
+  "name": "Zentral",
+  "description": "Unified Apps Grid, Tab Groups & Settings for Zen Browser",
+  "version": "0.1.5a",
+  "author": "Michele501st",
+  "homepage": "https://github.com/Michele501st/Zentral",
+  "scripts": {
+    "JS": {
+      "Zentral.uc.js": {
+        "include": ["main"]
+      }
+    }
+  },
+  "style": {
+    "chrome": "userChrome.css"
+  }
+}
