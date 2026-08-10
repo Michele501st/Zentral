@@ -6,10 +6,8 @@
   "author": "Michele501st",
   "homepage": "https://github.com/Michele501st/Zentral",
   "scripts": {
-    "JS": {
-      "Zentral.uc.js": {
-        "include": ["main"]
-      }
+    "JS/Zentral.uc.js": {
+      "include": ["chrome://browser/content/browser.xhtml"]
     }
   },
   "style": {
