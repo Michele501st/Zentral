@@ -2,7 +2,7 @@
 // @name         Zentral — Unified Diagnostic Logger
 // @description  Comprehensive diagnostic logger capturing console events, DOM interactions, tab group label rendering diagnostics, hit-test element inspection, and panel state.
 // @author       Michele Pierini
-// @version      2.1.0
+// @version      v0.1.5a
 // @include      main
 // ==/UserScript==
 

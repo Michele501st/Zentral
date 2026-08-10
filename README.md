@@ -1,7 +1,7 @@
 # 🌟 Zentral - Unified Apps Grid & Enhanced Tab Groups for Zen Browser
 <img width="811" height="593" alt="Zentral-Demo" src="https://github.com/user-attachments/assets/4dec0e5f-5b7f-4558-90a1-04775ec7f658" />
 
-![Version](https://img.shields.io/badge/version-1.5.0-blue.svg)
+![Version](https://img.shields.io/badge/version-v0.1.5a-blue.svg)
 ![License](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-orange.svg)
 ![Target](https://img.shields.io/badge/target-Zen%20Browser-purple.svg)
 

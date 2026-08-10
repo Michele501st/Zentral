@@ -3,7 +3,7 @@
 // @name           Zentral
 // @description    Unified Apps Grid and Tabs Groups
 // @author         Michele Pierini
-// @version        1.5.0
+// @version        v0.1.5a
 // @include        main
 // ==/UserScript==
 
@@ -4102,7 +4102,7 @@
       const htmlStr = `
         <div class="zs-header">
           <div class="zs-title-group">
-            <h2 class="zs-title">Zentral AppsSpace Settings</h2>
+            <h2 class="zs-title">Zentral Settings <span style="font-size: 11px; padding: 2px 7px; border-radius: 10px; background: color-mix(in srgb, currentColor 10%, transparent); opacity: 0.75; font-weight: 600; margin-left: 8px;">v0.1.5a</span></h2>
           </div>
           <button id="zs-close" class="zs-close-btn" title="Close Settings">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M1 1l12 12M13 1L1 13"/></svg>
@@ -4322,7 +4322,7 @@
     TabGroups,
     Settings,
     Init: () => {
-      console.log("[Zentral] Booting Master Script (v1.5.0)...");
+      console.log("[Zentral] Booting Master Script (v0.1.5a)...");
       Apps.init();
       TabGroups.init();
       Settings.init();
